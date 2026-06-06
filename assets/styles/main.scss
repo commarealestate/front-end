@@ -1,0 +1,18 @@
+@import './abstracts/_variables.scss';
+@import './abstracts/_mixins';
+@import './abstracts/_functions';
+@import './abstracts/_placeholders';
+
+
+@import './components/_navbar';
+
+
+@import './base/_typography';
+@import './tailwind.scss';
+
+.cardizerr-gradient {
+    background: transparent linear-gradient(132deg, $green 0%, $primary 100%);
+}
+.deleteItemAll p {
+    word-break: break-all;
+  }

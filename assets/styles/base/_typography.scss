@@ -1,0 +1,188 @@
+// ===============================
+// Google Fonts
+// ===============================
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&display=swap");
+// ===============================
+// Font Variables
+// ===============================
+
+// Arabic
+$font-ar-body: "IBM Plex Sans Arabic", sans-serif;
+$font-ar-heading: "Reem Kufi", sans-serif;
+
+// English
+$font-en-body: "Inter", sans-serif;
+$font-en-heading: "Playfair Display", serif;
+
+// ===============================
+// Base Styles
+// ===============================
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-size: 1rem;
+  line-height: 1.7;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+
+// ===============================
+// RTL (Arabic)
+// ===============================
+
+[dir="rtl"] {
+  body {
+    font-family: $font-ar-body;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: $font-ar-heading;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+}
+
+// ===============================
+// LTR (English)
+// ===============================
+
+[dir="ltr"] {
+  body {
+    font-family: $font-en-body;
+    text-align: left;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: $font-en-heading;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  p,
+  span,
+  a,
+  li,
+  button,
+  input,
+  textarea {
+    font-family: $font-en-body;
+    font-weight: 400;
+  }
+}
+
+// ===============================
+// Typography Scale
+// ===============================
+
+h1 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: inherit;
+}
+
+
+
+// ===============================
+// Font Weight
+// ===============================
+
+.font-light {
+  font-weight: 300;
+}
+
+.font-regular {
+  font-weight: 400;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+// ===============================
+// Line Heights
+// ===============================
+
+.leading-tight {
+  line-height: 1.2;
+}
+
+.leading-normal {
+  line-height: 1.6;
+}
+
+.leading-relaxed {
+  line-height: 1.8;
+}
+
+// ===============================
+// Letter Spacing (Luxury feel)
+// ===============================
+
+.tracking-tight {
+  letter-spacing: -0.02em;
+}
+
+.tracking-normal {
+  letter-spacing: 0;
+}
+
+.tracking-wide {
+  letter-spacing: 0.05em;
+}
+
+
+.hero-title {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  opacity: 0.9;
+}
+

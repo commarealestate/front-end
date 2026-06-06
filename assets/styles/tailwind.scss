@@ -1,0 +1,14 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+  
+.primary-h1 {
+    @apply text-white text-[24px]/[45px] lg:text-[40px]/[45px] xl:text-[50px]/[55px] 2xl:text-[60px]/[70px] font-semibold mb-[25px] lg:mb-[40px];
+}
+.primary-p {
+    @apply mb-[25px] lg:mb-[40px] md:text-[16px]/[29px] lg:text-[16px]/[29px] xl:text-[18px]/[29px];
+}
+
+.primary-h2 {
+    @apply text-white text-[28px]/[55px] xl:text-[35px]/[69px] 2xl:text-[50px]/[79px] font-semibold;
+}

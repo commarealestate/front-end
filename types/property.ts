@@ -1,0 +1,96 @@
+// ~/types/property.ts
+export interface RawApiProperty {
+  property_id: number;
+  reference_number?: string;
+  unit_no?: string;
+  total_area_sqft?: string | number;
+  bedroom?: number;
+  bathroom?: number;
+  parking?: string;
+  title?: { english: string; arabic: string };
+  description?: { english: string; arabic: string };
+  location?: string;
+  city?: string;
+  community?: string;
+  sub_community?: string;
+  tower?: string;
+  project_name?: string;
+  project_status?: string;
+  developers?: string;
+  build_year?: number;
+  availability?: string;
+  available_from?: string;
+  rental_period?: string;
+  furnished?: string;
+  down_payment_price?: string | number;
+  no_of_cheques?: number | null;
+  service_charge?: string | number;
+  payment_method?: string;
+  financial_status?: string;
+  contract_expiry_date?: string | null;
+  floor_plan?: string | null;
+  qr_code_property_booster?: string | null;
+  property_photos?: string[];
+  notes?: string;
+  price: number;
+  status?: string;
+  title_deed?: string;
+  has_garden?: boolean | string;
+  finishing_type?: string;
+  floor_no?: string;
+  land_no?: string;
+  plot_no?: string;
+  no_of_mortgage_years?: number | null;
+  has_parking_on_site?: boolean | string;
+  permit_issue_date?: string | null;
+  has_kitchen?: boolean | string;
+  property_type?: string;
+  sale_type?: string;
+  build_up_area_sqft?: number | null;
+  listing_owner?: number;
+  rera?: string;
+  adgm?: string;
+  offering_type?: string;
+  inventory_status?: string;
+  amenities?: string[];
+  view?: string[] | null;
+  installments?: string[] | null;
+  cover_image?: string[];
+  latitude?: string | null;
+  longitude?: string | null;
+  investment_insight?: string | null;
+  project_handover_date?: string | null;
+  project_start_year?: string | null;
+  developer_brief?: string | null;
+  security_deposit?: string | number | null;
+  ac_type?: string | null;
+  minimum_contract_duration?: string | null;
+  maximum_contract_duration?: string | null;
+  renewal_terms?: string | null;
+  notice_period?: string | null;
+  internal_size?: string | null;
+  external_size?: string | null;
+  permit_number?: string | null;
+}
+
+export interface ApiPaginatedResponse<T> {
+  status: number;
+  code: number;
+  message: string;
+  data: T[];
+  errors: any[];
+  links: {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number;
+    last_page: number;
+    per_page: number;
+    to: number;
+    total: number;
+  };
+}
