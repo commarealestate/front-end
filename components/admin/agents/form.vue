@@ -69,6 +69,12 @@
               <UFormGroup label="CRE ID" name="cre" :error="fieldError('cre')">
                 <UInput v-model="form.cre" type="number" />
               </UFormGroup>
+              <UFormGroup label="Website Level" name="website_level" :error="fieldError('website_level')">
+                <USelect v-model="form.website_level" :options="websiteLevelOptions" />
+              </UFormGroup>
+              <UFormGroup label="Display Order" name="display_order" :error="fieldError('display_order')">
+                <UInput v-model="form.display_order" type="number" min="0" placeholder="Lower numbers appear first" />
+              </UFormGroup>
               <UFormGroup label="Show On Website" name="show_on_website" :error="fieldError('show_on_website')">
                 <UToggle v-model="form.show_on_website" />
               </UFormGroup>
@@ -352,6 +358,8 @@ const form = reactive({
   show_on_website: true,
   active: true,
   cre: '',
+  website_level: '',
+  display_order: '',
   position: '',
   agent_type: '',
   specialties: '',
@@ -422,6 +430,13 @@ const genderOptions = [
   { label: 'Other', value: 'O' },
 ]
 
+const websiteLevelOptions = [
+  { label: 'No level selected', value: '' },
+  { label: 'Level 1 - Higher Management', value: 'higher_management' },
+  { label: 'Level 2 - Management', value: 'management' },
+  { label: 'Level 3 - Agents', value: 'agents' },
+]
+
 const fieldLabels: Record<string, string> = {
   name: 'Name',
   last_name: 'Last Name',
@@ -442,6 +457,8 @@ const fieldLabels: Record<string, string> = {
   personal_notes: 'Personal Notes',
   personal_photo: 'Personal Photo',
   cre: 'CRE ID',
+  website_level: 'Website Level',
+  display_order: 'Display Order',
   show_on_website: 'Show On Website',
   active: 'Active',
   work_position: 'Work Position',
@@ -592,6 +609,8 @@ onMounted(async () => {
         show_on_website: a.show_on_website === 'Yes' || a.show_on_website === '1' || a.show_on_website === true,
         active: a.active !== false,
         cre: a.cre || '',
+        website_level: a.website_level || '',
+        display_order: a.display_order ?? '',
         position: a.position || '',
         agent_type: a.agent_type || '',
         specialties: a.specialties || '',
@@ -708,6 +727,8 @@ async function handleSubmit() {
     formData.set('second_name', form.second_name)
     formData.set('middle_name', form.second_name)
     formData.set('e_mail', form.email)
+    formData.set('website_level', form.website_level || '')
+    formData.set('display_order', form.display_order === '' ? '' : String(form.display_order))
     formData.set('show_on_website', form.show_on_website ? 'Yes' : 'No')
     formData.set('active', form.active ? '1' : '0')
     // Append service areas as array

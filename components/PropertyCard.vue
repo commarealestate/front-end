@@ -37,7 +37,7 @@
 
       <div class="flex items-center text-comma-neutral-500 text-sm mb-3">
         <Icon name="mdi:map-marker" class="w-3.5 h-3.5 mr-1 flex-shrink-0" />
-        <span class="truncate">{{ property.location || property.community || property.city }}</span>
+        <span class="truncate">{{ displayLocation }}</span>
       </div>
 
       <!-- Key specs in a compact row -->
@@ -94,7 +94,14 @@ const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e
 
 const displayTitle = computed(() => {
   const localized = locale.value === 'ar' ? props.property.titleArabic : props.property.titleEnglish
-  return localized || props.property.referenceNumber || `Property #${props.property.id}`
+  const fallback = locale.value === 'ar' ? props.property.titleEnglish : props.property.titleArabic
+  return localized || fallback || props.property.referenceNumber || `Property #${props.property.id}`
+})
+
+const displayLocation = computed(() => {
+  const localized = locale.value === 'ar' ? props.property.locationArabic : props.property.locationEnglish
+  const fallback = locale.value === 'ar' ? props.property.locationEnglish : props.property.locationArabic
+  return localized || fallback || props.property.location || props.property.community || props.property.city
 })
 
 const propertySlug = computed(() => String(props.property.titleEnglish || props.property.titleArabic || props.property.referenceNumber || `property-${props.property.id}`)
@@ -133,7 +140,7 @@ function getMessageText() {
 I'm interested in the following property:
 
 Property: ${displayTitle.value}
-Location: ${props.property.location || props.property.community || props.property.city}
+Location: ${displayLocation.value}
 Price: ${formatPrice(props.property.price)}
 
 Property Link: ${getPropertyUrl()}

@@ -320,6 +320,44 @@ onUnmounted(() => {
   newGalleryImages.value.forEach(revokeFilePreview)
 })
 
+function readText(value: any): string {
+  if (typeof value === 'string') return value.trim()
+  if (typeof value === 'number') return String(value)
+
+  return ''
+}
+
+function readLocalized(raw: any, field: string, locale: 'en' | 'ar'): string {
+  const value = raw?.[field]
+  const localeKeys = locale === 'en'
+    ? ['english', 'en', 'english_text']
+    : ['arabic', 'ar', 'arabic_text']
+  const suffixes = locale === 'en'
+    ? ['english', 'en', 'en_US']
+    : ['arabic', 'ar', 'ar_AE']
+
+  for (const key of localeKeys) {
+    const text = readText(value?.[key])
+    if (text) return text
+  }
+
+  for (const suffix of suffixes) {
+    const text = readText(raw?.[`${field}_${suffix}`])
+    if (text) return text
+  }
+
+  return ''
+}
+
+function firstText(...values: any[]): string {
+  for (const value of values) {
+    const text = readText(value)
+    if (text) return text
+  }
+
+  return ''
+}
+
 // Load existing data if edit mode
 onMounted(async () => {
   if (props.mode === 'edit' && props.propertyId) {
@@ -329,17 +367,17 @@ onMounted(async () => {
       // Map to form
       form.reference_number = p.reference_number || ''
       form.offering_type = p.offering_type || 'sale'
-      form.title_en = p.title_en || ''
-      form.title_ar = p.title_ar || ''
-      form.description_en = p.description_en || ''
-      form.description_ar = p.description_ar || ''
+      form.title_en = firstText(p.title_en, p.titleEnglish, readLocalized(p, 'title', 'en'), p.title)
+      form.title_ar = firstText(p.title_ar, p.titleArabic, readLocalized(p, 'title', 'ar'))
+      form.description_en = firstText(p.description_en, p.descriptionEnglish, readLocalized(p, 'description', 'en'), p.description)
+      form.description_ar = firstText(p.description_ar, p.descriptionArabic, readLocalized(p, 'description', 'ar'))
       form.community = p.community || ''
       form.sub_community = p.sub_community || ''
-      form.project_name = p.project_name || ''
+      form.project_name = firstText(p.project_name, p.projectName)
       form.tower = p.tower || ''
       form.unit_no = p.unit_no || ''
-      form.location_en = p.location_en || ''
-      form.location_ar = p.location_ar || ''
+      form.location_en = firstText(p.location_en, p.locationEnglish, readLocalized(p, 'location', 'en'), p.location)
+      form.location_ar = firstText(p.location_ar, p.locationArabic, readLocalized(p, 'location', 'ar'))
       form.year_built = p.year_built || p.build_year || ''
       form.bedrooms = Number(p.bedrooms) || 0
       form.bathrooms = Number(p.bathrooms) || 0
@@ -452,6 +490,7 @@ async function handleSubmit() {
       description_en: 'description_english',
       description_ar: 'description_arabic',
       location_en: 'location',
+      location_ar: 'location_arabic',
       year_built: 'build_year',
       bedrooms: 'bedroom',
       bathrooms: 'bathroom',

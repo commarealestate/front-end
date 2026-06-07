@@ -46,8 +46,7 @@
             <!-- Basic Info -->
             <div class="flex-1 text-white">
               <h1 class="text-3xl lg:text-4xl font-bold mb-2 font-display">{{ fullName }}</h1>
-              <p v-if="agent.specialties" class="text-xl text-white/90 mb-4">{{ agent.specialties }}</p>
-              <p v-else-if="agent.agent_type" class="text-lg text-white/80 mb-4">{{ agent.agent_type }}</p>
+              <p v-if="jobTitle" class="text-xl text-white/90 mb-4">{{ jobTitle }}</p>
 
               <!-- Stats -->
               <div class="flex flex-wrap gap-6 mb-6">
@@ -180,10 +179,14 @@
                 </div>
 
                 <!-- Professional Details -->
-                <div v-if="agent.specialties || agent.agent_type || agent.departments?.length" class="mb-6">
+                <div v-if="jobTitle || agent.specialties || agent.agent_type || agent.departments?.length" class="mb-6">
                   <h3 class="text-lg font-bold text-comma-neutral-900 mb-3">{{ $t('agent_detail.professional_details')
                     }}</h3>
                   <div class="space-y-3">
+                    <div v-if="jobTitle">
+                      <div class="text-sm text-comma-neutral-600 font-medium">Job Title</div>
+                      <div class="text-comma-neutral-800">{{ jobTitle }}</div>
+                    </div>
                     <div v-if="agent.specialties">
                       <div class="text-sm text-comma-neutral-600 font-medium">{{ $t('agent_detail.specialties') }}
                       </div>
@@ -387,7 +390,7 @@ onMounted(async () => {
 
 const fullName = computed(() => {
   if (!agent.value) return ''
-  const parts = [agent.value.first_name, agent.value.last_name].filter(Boolean)
+  const parts = [agent.value.first_name || agent.value.name, agent.value.second_name || agent.value.middle_name, agent.value.last_name].filter(Boolean)
   return parts.join(' ') || 'Unnamed'
 })
 
@@ -396,6 +399,10 @@ const experience = computed(() => {
   const start = new Date(agent.value.uf_employment_date)
   const now = new Date()
   return Math.max(0, now.getFullYear() - start.getFullYear())
+})
+
+const jobTitle = computed(() => {
+  return agent.value?.work_position || agent.value?.position || agent.value?.personal_profession || agent.value?.agent_type || ''
 })
 
 const propertiesCount = computed(() => propertiesStore.properties.length)
@@ -448,7 +455,7 @@ const formatPrice = (price: number) => {
 useHead(() => {
   if (!agent.value) return {}
   return {
-    title: `${fullName.value} - ${agent.value.specialties || agent.value.agent_type || 'Agent'} | Comma Real Estate`,
+    title: `${fullName.value} - ${jobTitle.value || agent.value.specialties || 'Agent'} | Comma Real Estate`,
     meta: [
       {
         name: 'description',

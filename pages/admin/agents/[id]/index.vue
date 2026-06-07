@@ -32,6 +32,12 @@
             <span v-if="agent.cre" class="px-3 py-1 rounded-full text-sm font-semibold bg-comma-primary/10 text-comma-primary">
               CRE {{ agent.cre }}
             </span>
+            <span v-if="websiteLevelLabel" class="px-3 py-1 rounded-full text-sm font-semibold bg-comma-secondary/10 text-comma-secondary">
+              {{ websiteLevelLabel }}
+            </span>
+            <span v-if="agent.display_order !== null && agent.display_order !== undefined" class="px-3 py-1 rounded-full text-sm font-semibold bg-comma-surface-subtle text-comma-neutral-700">
+              Display #{{ agent.display_order }}
+            </span>
           </div>
         </div>
       </div>
@@ -136,6 +142,12 @@ const fullName = computed(() => {
 const primaryPhoto = computed(() => firstArrayItem(agent.value?.personal_photo) || firstArrayItem(agent.value?.photo))
 const primaryPosition = computed(() => agent.value?.position || agent.value?.work_position || agent.value?.personal_profession || '')
 const isWebsiteVisible = computed(() => agent.value?.show_on_website === 'Yes' || agent.value?.show_on_website === '1' || agent.value?.show_on_website === true)
+const websiteLevelLabel = computed(() => {
+  if (agent.value?.website_level === 'higher_management') return 'Level 1 - Higher Management'
+  if (agent.value?.website_level === 'management') return 'Level 2 - Management'
+  if (agent.value?.website_level === 'agents') return 'Level 3 - Agents'
+  return ''
+})
 
 const detailSections = computed(() => {
   if (!agent.value) return []
@@ -204,6 +216,8 @@ const detailSections = computed(() => {
         { label: 'Show On Website', value: isWebsiteVisible.value ? 'Yes' : 'No' },
         { label: 'Active', value: a.active ? 'Yes' : 'No' },
         { label: 'CRE', value: a.cre },
+        { label: 'Website Level', value: websiteLevelLabel.value },
+        { label: 'Display Order', value: a.display_order },
         { label: 'Specialties', value: a.specialties },
         { label: 'Service Area Text', value: a.service_area },
         { label: 'Online', value: a.is_online },

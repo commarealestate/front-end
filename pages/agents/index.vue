@@ -166,9 +166,21 @@
             </div>
 
             <!-- Agents Grid (only visible agents) -->
-            <div v-else-if="sortedAgents.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
-              <div v-for="agent in sortedAgents" :key="agentKey(agent)"
-                class="bg-white rounded-2xl shadow-card overflow-hidden group hover:shadow-hover transition-all duration-500 hover:-translate-y-1 border border-comma-border-subtle h-full flex flex-col">
+            <div v-else-if="groupedAgentSections.length > 0" class="space-y-10">
+              <section v-for="section in groupedAgentSections" :key="section.key" class="space-y-4">
+                <div class="flex items-center justify-between gap-4 border-b border-comma-border-subtle pb-3">
+                  <div>
+                    <p class="text-sm font-medium text-comma-primary">{{ section.level }}</p>
+                    <h3 class="text-xl lg:text-2xl font-bold text-comma-neutral-900 font-display">
+                      {{ section.label }}
+                    </h3>
+                  </div>
+                  <span class="text-sm text-comma-neutral-500">{{ section.agents.length }}</span>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
+                  <div v-for="agent in section.agents" :key="agentKey(agent)"
+                    class="bg-white rounded-2xl shadow-card overflow-hidden group hover:shadow-hover transition-all duration-500 hover:-translate-y-1 border border-comma-border-subtle h-full flex flex-col">
                 <div class="flex flex-col lg:flex-row h-full">
                   <!-- Agent Portrait -->
                   <div class="lg:w-2/5 relative overflow-hidden">
@@ -196,8 +208,8 @@
                         <h3 class="text-xl lg:text-2xl font-bold text-comma-neutral-900 font-display leading-tight">
                           {{ fullName(agent) }}
                         </h3>
-                        <p v-if="agent.specialties" class="text-comma-primary font-semibold mt-1 line-clamp-1">
-                          {{ agent.specialties }}
+                        <p v-if="jobTitle(agent)" class="text-comma-primary font-semibold mt-1 line-clamp-1">
+                          {{ jobTitle(agent) }}
                         </p>
                       </div>
 
@@ -244,7 +256,9 @@
                     </div>
                   </div>
                 </div>
-              </div>
+                  </div>
+                </div>
+              </section>
             </div>
 
             <!-- Empty State -->
@@ -444,7 +458,7 @@ const propertiesStore = usePropertiesStore()
 
 // Fetch data on mount
 onMounted(async () => {
-  await store.fetchAgents()
+  await store.fetchAgents({ per_page: 100 })
   await store.fetchServiceAreas()
   await propertiesStore.fetchProperties({ per_page: 3, sort_by: 'created_at', sort_direction: 'desc' })
 })
@@ -458,8 +472,12 @@ const isFilterOpen = ref(false)
 
 // Helper: get full name
 function fullName(agent: Agent): string {
-  const parts = [agent.first_name, agent.last_name].filter(Boolean)
+  const parts = [agent.first_name || agent.name, agent.second_name || agent.middle_name, agent.last_name].filter(Boolean)
   return parts.join(' ') || 'Unnamed'
+}
+
+function jobTitle(agent: Agent): string {
+  return agent.work_position || agent.position || agent.personal_profession || agent.agent_type || ''
 }
 
 function agentKey(agent: Agent): number {
@@ -516,19 +534,42 @@ const filteredAgents = computed(() => {
   return filtered
 })
 
-// Priority sort: agents with specialties first, co-founders first
-function prioritySort(a: Agent, b: Agent): number {
-  const aHasSpec = !!a.specialties
-  const bHasSpec = !!b.specialties
-  if (aHasSpec && !bHasSpec) return -1
-  if (!aHasSpec && bHasSpec) return 1
-  if (aHasSpec && bHasSpec) {
-    const specA = a.specialties.toLowerCase()
-    const specB = b.specialties.toLowerCase()
-    if (specA.includes('co-founder') && !specB.includes('co-founder')) return -1
-    if (!specA.includes('co-founder') && specB.includes('co-founder')) return 1
-    return fullName(a).localeCompare(fullName(b))
-  }
+const agentLevelConfig = [
+  { key: 'higher_management', level: 'Level 1', label: { en: 'Higher Management', ar: 'الإدارة العليا' } },
+  { key: 'management', level: 'Level 2', label: { en: 'Management', ar: 'الإدارة' } },
+  { key: 'agents', level: 'Level 3', label: { en: 'Agents', ar: 'المستشارون' } },
+] as const
+
+function levelRank(agent: Agent): number {
+  if (agent.website_level === 'higher_management') return 1
+  if (agent.website_level === 'management') return 2
+  if (agent.website_level === 'agents') return 3
+  return 3
+}
+
+function dateRank(value?: string | null): number {
+  if (!value) return Number.MAX_SAFE_INTEGER
+  const timestamp = new Date(value).getTime()
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp
+}
+
+function websiteDisplaySort(a: Agent, b: Agent): number {
+  const orderA = a.display_order ?? Number.MAX_SAFE_INTEGER
+  const orderB = b.display_order ?? Number.MAX_SAFE_INTEGER
+  if (orderA !== orderB) return orderA - orderB
+
+  const levelA = levelRank(a)
+  const levelB = levelRank(b)
+  if (levelA !== levelB) return levelA - levelB
+
+  const creA = a.cre ?? Number.MAX_SAFE_INTEGER
+  const creB = b.cre ?? Number.MAX_SAFE_INTEGER
+  if (creA !== creB) return creA - creB
+
+  const dateA = dateRank(a.uf_employment_date)
+  const dateB = dateRank(b.uf_employment_date)
+  if (dateA !== dateB) return dateA - dateB
+
   return fullName(a).localeCompare(fullName(b))
 }
 
@@ -541,8 +582,31 @@ const sortedAgents = computed(() => {
     case 'recent':
       return agents.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
     default:
-      return agents.sort(prioritySort)
+      return agents.sort(websiteDisplaySort)
   }
+})
+
+const groupedAgentSections = computed(() => {
+  const agents = sortedAgents.value
+  if (sortBy.value !== 'priority') {
+    return [
+      {
+        key: 'all',
+        level: '',
+        label: locale.value === 'ar' ? 'كل المستشارين' : 'All Agents',
+        agents,
+      },
+    ].filter((section) => section.agents.length > 0)
+  }
+
+  return agentLevelConfig
+    .map((config) => ({
+      key: config.key,
+      level: config.level,
+      label: locale.value === 'ar' ? config.label.ar : config.label.en,
+      agents: agents.filter((agent) => (agent.website_level || 'agents') === config.key),
+    }))
+    .filter((section) => section.agents.length > 0)
 })
 
 const activeCount = computed(() => store.visibleAgents.filter((a) => a.active).length)

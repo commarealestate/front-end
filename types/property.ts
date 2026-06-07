@@ -87,6 +87,8 @@ export interface NormalizedProperty {
   titleArabic: string;
   descriptionArabic: string;
   location: string;
+  locationEnglish: string;
+  locationArabic: string;
   city: string;
   community: string;
   subCommunity: string;

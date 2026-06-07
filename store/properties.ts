@@ -51,14 +51,22 @@ function localizedText(raw: any, field: string): { en: string; ar: string } {
     en:
       textValue(value?.english) ||
       textValue(value?.en) ||
+      textValue(value?.english_text) ||
       textValue(raw[`${field}_english`]) ||
-      textValue(raw[`${field}_en`]),
+      textValue(raw[`${field}_en`]) ||
+      textValue(raw[`${field}_en_US`]),
     ar:
       textValue(value?.arabic) ||
       textValue(value?.ar) ||
+      textValue(value?.arabic_text) ||
       textValue(raw[`${field}_arabic`]) ||
-      textValue(raw[`${field}_ar`]),
+      textValue(raw[`${field}_ar`]) ||
+      textValue(raw[`${field}_ar_AE`]),
   };
+}
+
+function localeFallback(en: string, ar: string): string {
+  return en || ar || "";
 }
 
 function normalizeAdminProperty(raw: any) {
@@ -68,10 +76,13 @@ function normalizeAdminProperty(raw: any) {
   const images = [...coverImages, ...propertyPhotos];
   const titleText = localizedText(raw, "title");
   const descriptionText = localizedText(raw, "description");
-  const title = titleText.en;
+  const locationText = localizedText(raw, "location");
+  const title = titleText.en || textValue(raw.title);
   const titleAr = titleText.ar;
-  const description = descriptionText.en;
+  const description = descriptionText.en || textValue(raw.description);
   const descriptionAr = descriptionText.ar;
+  const location = locationText.en || textValue(raw.location);
+  const locationAr = locationText.ar;
 
   return {
     ...raw,
@@ -82,6 +93,9 @@ function normalizeAdminProperty(raw: any) {
     description,
     description_en: description,
     description_ar: descriptionAr,
+    location,
+    location_en: location,
+    location_ar: locationAr,
     bedrooms: raw.bedrooms ?? raw.bedroom ?? 0,
     bathrooms: raw.bathrooms ?? raw.bathroom ?? 0,
     size: raw.size ?? raw.total_area_sqft ?? "",
@@ -98,11 +112,15 @@ function normalizeAdminProperty(raw: any) {
 // Normalization helper: API property (new backend) -> NormalizedProperty
 // ----------------------------------------------------------------------
 function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
-  // Handle nested title/description
-  const titleEnglish = textValue(raw.title?.english);
-  const titleArabic = textValue(raw.title?.arabic);
-  const descEnglish = textValue(raw.description?.english);
-  const descArabic = textValue(raw.description?.arabic);
+  const titleText = localizedText(raw, "title");
+  const descriptionText = localizedText(raw, "description");
+  const locationText = localizedText(raw, "location");
+  const titleEnglish = titleText.en || textValue(raw.title);
+  const titleArabic = titleText.ar;
+  const descEnglish = descriptionText.en || textValue(raw.description);
+  const descArabic = descriptionText.ar;
+  const locationEnglish = locationText.en || textValue(raw.location);
+  const locationArabic = locationText.ar;
   const coverImages = asStringArray(raw.cover_image);
   const propertyPhotos = asStringArray(raw.property_photos);
   const legacyImages = asStringArray(raw.images);
@@ -120,7 +138,9 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
     descriptionEnglish: descEnglish,
     titleArabic,
     descriptionArabic: descArabic,
-    location: raw.location || "",
+    location: localeFallback(locationEnglish, locationArabic),
+    locationEnglish,
+    locationArabic,
     city: raw.city || "",
     community: raw.community || "",
     subCommunity: raw.sub_community || "",

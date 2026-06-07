@@ -21,6 +21,8 @@ export interface Agent {
   company_e_mail: string
   photo?: string[]
   cre: number
+  website_level?: 'higher_management' | 'management' | 'agents' | null
+  display_order?: number | null
   active: boolean                      // boolean, not string
   // Additional fields (kept for compatibility, many may be null)
   title: string | null

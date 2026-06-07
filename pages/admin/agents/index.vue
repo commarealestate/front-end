@@ -119,41 +119,45 @@ async function handleToggleActive(agent: Agent) {
   await store.toggleActive(agent.agent_id, !agent.active)
 }
 
-// Helper to get full name for sorting
 function fullName(agent: Agent) {
-  const parts = [agent.name, agent.second_name, agent.last_name].filter(Boolean)
+  const parts = [agent.first_name || agent.name, agent.second_name || agent.middle_name, agent.last_name].filter(Boolean)
   return parts.join(' ') || 'Unnamed'
 }
 
-// Priority sort function
-function prioritySort(a: Agent, b: Agent) {
-  const aHasPos = !!a.work_position
-  const bHasPos = !!b.work_position
-  if (aHasPos && !bHasPos) return -1
-  if (!aHasPos && bHasPos) return 1
+function levelRank(agent: Agent) {
+  if (agent.website_level === 'higher_management') return 1
+  if (agent.website_level === 'management') return 2
+  if (agent.website_level === 'agents') return 3
+  return 4
+}
 
-  if (aHasPos && bHasPos) {
-    const posA = a.work_position
-    const posB = b.work_position
+function dateRank(value?: string | null) {
+  if (!value) return Number.MAX_SAFE_INTEGER
+  const timestamp = new Date(value).getTime()
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp
+}
 
-    // 1. Co- Founder & General Manager
-    if (posA === 'Co- Founder & General Manager' && posB !== 'Co- Founder & General Manager') return -1
-    if (posA !== 'Co- Founder & General Manager' && posB === 'Co- Founder & General Manager') return 1
+function agentDisplaySort(a: Agent, b: Agent) {
+  const orderA = a.display_order ?? Number.MAX_SAFE_INTEGER
+  const orderB = b.display_order ?? Number.MAX_SAFE_INTEGER
+  if (orderA !== orderB) return orderA - orderB
 
-    // 2. Co-Founder & Chairman
-    if (posA === 'Co-Founder & Chairman' && posB !== 'Co-Founder & Chairman') return -1
-    if (posA !== 'Co-Founder & Chairman' && posB === 'Co-Founder & Chairman') return 1
+  const levelA = levelRank(a)
+  const levelB = levelRank(b)
+  if (levelA !== levelB) return levelA - levelB
 
-    // Otherwise sort by name
-    return fullName(a).localeCompare(fullName(b))
-  }
+  const creA = a.cre ?? Number.MAX_SAFE_INTEGER
+  const creB = b.cre ?? Number.MAX_SAFE_INTEGER
+  if (creA !== creB) return creA - creB
 
-  // Both have no position, sort by name
+  const dateA = dateRank(a.uf_employment_date)
+  const dateB = dateRank(b.uf_employment_date)
+  if (dateA !== dateB) return dateA - dateB
+
   return fullName(a).localeCompare(fullName(b))
 }
 
-// Sorted agents
 const sortedAgents = computed(() => {
-  return [...store.agents].sort(prioritySort)
+  return [...store.agents].sort(agentDisplaySort)
 })
 </script>

@@ -18,8 +18,15 @@
           class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-comma-neutral-400"
         >
           <AdminLocalIcon name="user" class="w-20 h-20" />
-          <span class="text-xs mt-2">No Image</span>
+            <span class="text-xs mt-2">No Image</span>
         </div>
+
+        <span
+          v-if="agent.display_order !== null && agent.display_order !== undefined"
+          class="absolute top-3 right-3 px-2 py-1 text-xs font-semibold rounded bg-white/90 text-comma-neutral-800 shadow"
+        >
+          #{{ agent.display_order }}
+        </span>
 
         <!-- Active badge -->
         <span
@@ -43,12 +50,18 @@
 
       <!-- Position -->
       <p
-        v-if="agent.work_position"
+        v-if="jobTitle"
         class="text-sm text-comma-neutral-600 mt-1 line-clamp-1 min-h-[20px]"
       >
-        {{ agent.work_position }}
+        {{ jobTitle }}
       </p>
       <div v-else class="min-h-[20px]"></div>
+
+      <div v-if="levelLabel" class="mt-2">
+        <span class="inline-flex rounded bg-comma-primary/10 px-2 py-1 text-xs font-medium text-comma-primary">
+          {{ levelLabel }}
+        </span>
+      </div>
 
       <!-- Contact -->
       <div class="mt-3 space-y-1 text-sm text-comma-neutral-700 min-h-[48px]">
@@ -120,5 +133,16 @@ const fullName = computed(() => {
 
 const primaryPhoto = computed(() => {
   return props.agent.personal_photo?.[0] || props.agent.photo?.[0] || ''
+})
+
+const jobTitle = computed(() => {
+  return props.agent.work_position || props.agent.position || props.agent.personal_profession || props.agent.agent_type || ''
+})
+
+const levelLabel = computed(() => {
+  if (props.agent.website_level === 'higher_management') return 'Level 1 - Higher Management'
+  if (props.agent.website_level === 'management') return 'Level 2 - Management'
+  if (props.agent.website_level === 'agents') return 'Level 3 - Agents'
+  return ''
 })
 </script>
