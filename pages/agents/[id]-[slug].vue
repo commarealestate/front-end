@@ -262,7 +262,7 @@
                 <div class="flex justify-between items-center mb-6">
                   <h2 class="text-2xl font-bold text-comma-neutral-900 font-display">{{ $t('agent_detail.my_listings')
                     }}</h2>
-                  <NuxtLink :to="localePath(`/properties?listing_owner=${agent.id}`)"
+                  <NuxtLink :to="localePath(`/properties?listing_owner=${agentKey(agent)}`)"
                     class="text-comma-primary font-medium hover:text-comma-primary-dark transition-colors duration-300 flex items-center gap-1">
                     {{ $t('agent_detail.view_all') }}
                     <Icon name="mdi:arrow-right" class="w-4 h-4" :class="{ 'rotate-180': direction === 'rtl' }" />
@@ -330,7 +330,7 @@
       <Icon name="mdi:account" class="w-16 h-16 text-comma-neutral-300 mx-auto mb-4" />
       <h1 class="text-2xl font-bold text-comma-neutral-900 mb-2">{{ $t('agent_detail.not_found') }}</h1>
       <p class="text-comma-neutral-600 mb-6">{{ $t('agent_detail.not_found_description') }}</p>
-      <NuxtLink to="/agents"
+      <NuxtLink :to="localePath('/agents')"
         class="px-6 py-3 bg-comma-primary text-white font-semibold rounded-lg hover:bg-comma-primary-dark transition-colors duration-300">
         {{ $t('agent_detail.back_to_agents') }}
       </NuxtLink>
@@ -358,6 +358,10 @@ const agentId = Number(fullParam.split('-')[0])
 const agent = ref<any>(null)
 const loading = ref(true)
 
+function agentKey(value: any): number {
+  return Number(value?.agent_id ?? value?.id)
+}
+
 onMounted(async () => {
   try {
     // Load agents if not already loaded
@@ -365,10 +369,10 @@ onMounted(async () => {
       await store.fetchAgents()
     }
     // Find agent in visible agents
-    const found = store.visibleAgents.find((a) => Number(a.id) === agentId)
+    const found = store.visibleAgents.find((a) => agentKey(a) === agentId)
     if (found) {
       agent.value = found
-      // Fetch agent's properties (listing_owner matches agent.id)
+      // Fetch agent's properties (listing_owner matches the CRM agent id)
       await propertiesStore.fetchProperties({ listing_owner: agentId, per_page: 4 })
     } else {
       agent.value = null

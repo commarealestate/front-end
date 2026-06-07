@@ -8,7 +8,7 @@
       </div>
 
       <!-- Filters -->
-      <AdminContactFilters @filter="applyFilters" @reset="resetFilters" />
+      <AdminContactFilters :initial-filters="filters" @filter="applyFilters" @reset="resetFilters" />
 
       <!-- Table -->
       <AdminContactTable
@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useContactStore } from '~/store/contact'
 
 const store = useContactStore()
@@ -42,12 +42,26 @@ const page = ref(1)
 const filters = ref<Record<string, any>>({})
 
 onMounted(() => {
+  syncFromQuery()
+  fetchMessages()
+})
+
+watch(
+  () => route.query,
+  () => {
+    syncFromQuery()
+    fetchMessages(false)
+  },
+)
+
+function syncFromQuery() {
   const query = { ...route.query }
   page.value = Number(query.page) || 1
   delete query.page
-  filters.value = query
-  fetchMessages()
-})
+  filters.value = Object.fromEntries(
+    Object.entries(query).filter(([, value]) => value !== '' && value !== undefined && value !== null),
+  )
+}
 
 function applyFilters(newFilters: Record<string, any>) {
   filters.value = newFilters
@@ -66,13 +80,23 @@ function fetchPage(newPage: number) {
   fetchMessages()
 }
 
-async function fetchMessages() {
+async function fetchMessages(updateQuery = true) {
+  const params = routeQueryParams()
+  await store.fetchMessages(params)
+  if (updateQuery) {
+    router.replace({ query: params })
+  }
+}
+
+function routeQueryParams() {
   const params: Record<string, any> = {
     ...filters.value,
     page: page.value,
   }
-  await store.fetchMessages(params)
-  router.replace({ query: params })
+
+  return Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== '' && value !== undefined && value !== null),
+  )
 }
 
 async function handleDelete(message: any) {

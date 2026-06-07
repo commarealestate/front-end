@@ -56,6 +56,33 @@
             <dt class="text-sm text-comma-neutral-600">{{ $t('admin_contact_page.received') }}</dt>
             <dd class="font-medium">{{ formatDate(message.created_at) }}</dd>
           </div>
+          <div v-if="hasProjectFields" class="md:col-span-2">
+            <dt class="text-sm text-comma-neutral-600">Project Inquiry</dt>
+            <dd class="mt-2 grid grid-cols-1 gap-3 rounded-lg bg-comma-primary/5 p-4 md:grid-cols-2">
+              <div v-if="message.project_title">
+                <div class="text-xs text-comma-neutral-500">Project Title</div>
+                <div class="font-medium text-comma-neutral-900">{{ message.project_title }}</div>
+              </div>
+              <div v-if="message.project_id">
+                <div class="text-xs text-comma-neutral-500">Project ID</div>
+                <div class="font-medium text-comma-neutral-900">{{ message.project_id }}</div>
+              </div>
+              <div v-if="message.source">
+                <div class="text-xs text-comma-neutral-500">Source</div>
+                <div class="font-medium text-comma-neutral-900">{{ message.source }}</div>
+              </div>
+              <div v-if="message.page_url" class="md:col-span-2">
+                <div class="text-xs text-comma-neutral-500">Page URL</div>
+                <a :href="message.page_url" target="_blank" class="break-all font-medium text-comma-primary hover:underline">
+                  {{ message.page_url }}
+                </a>
+              </div>
+              <div v-for="item in trackingFields" :key="item.key">
+                <div class="text-xs text-comma-neutral-500">{{ item.label }}</div>
+                <div class="font-medium text-comma-neutral-900">{{ item.value }}</div>
+              </div>
+            </dd>
+          </div>
           <div class="md:col-span-2">
             <dt class="text-sm text-comma-neutral-600">{{ $t('admin_contact_page.message') }}</dt>
             <dd class="mt-2 p-4 bg-comma-surface-subtle rounded-lg whitespace-pre-line">{{ message.message }}</dd>
@@ -96,6 +123,24 @@ onMounted(async () => {
 })
 
 const message = computed(() => store.message)
+
+const hasProjectFields = computed(() => {
+  const msg = message.value
+  return !!(msg?.project_id || msg?.project_title || msg?.source || msg?.page_url || trackingFields.value.length)
+})
+
+const trackingFields = computed(() => {
+  const msg = message.value
+  if (!msg) return []
+
+  return [
+    { key: 'utm_source', label: 'UTM Source', value: msg.utm_source },
+    { key: 'utm_medium', label: 'UTM Medium', value: msg.utm_medium },
+    { key: 'utm_campaign', label: 'UTM Campaign', value: msg.utm_campaign },
+    { key: 'utm_term', label: 'UTM Term', value: msg.utm_term },
+    { key: 'utm_content', label: 'UTM Content', value: msg.utm_content },
+  ].filter((item) => item.value)
+})
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString(locale.value === 'ar' ? 'ar-SA' : 'en-US', {

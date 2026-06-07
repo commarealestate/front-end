@@ -24,6 +24,10 @@
 </template>
 
 <script setup lang="ts">
+const props = defineProps<{
+  initialFilters?: Record<string, any>
+}>()
+
 const emit = defineEmits(['filter', 'reset'])
 
 const filters = ref({
@@ -36,6 +40,17 @@ const readOptions = [
   { label: 'Read', value: '1' },
   { label: 'Unread', value: '0' },
 ]
+
+watch(
+  () => props.initialFilters,
+  (value) => {
+    filters.value = {
+      search: String(value?.search || ''),
+      is_read: value?.is_read !== undefined ? String(value.is_read) : '',
+    }
+  },
+  { immediate: true },
+)
 
 function apply() {
   const cleaned: Record<string, any> = {}

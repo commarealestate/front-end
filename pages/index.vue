@@ -2,6 +2,7 @@
   <div >
     <HeroSection />
     <!-- <QuickSearch /> -->
+    <ProjectsSection />
     <AboutSection />
 
     <PropertiesSection />

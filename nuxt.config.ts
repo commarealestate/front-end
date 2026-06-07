@@ -1,7 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const isDev = process.env.NODE_ENV === "development";
 
 export default defineNuxtConfig({
   devtools: { enabled: false },
+  experimental: {
+    viteEnvironmentApi: false,
+  },
 
   app: {
     routerOptions: {
@@ -123,6 +127,16 @@ export default defineNuxtConfig({
         ignored: ["**/.nuxt/**", "**/.output/**", "**/nuxt-dev*.log"],
       },
     },
+    build: isDev
+      ? {
+          rollupOptions: {
+            input: {
+              entry: "node_modules/nuxt/dist/app/entry.js",
+              server: "node_modules/nuxt/dist/app/entry-spa.js",
+            },
+          },
+        }
+      : {},
     resolve: {
       alias: {
         "#zod": "nuxt-zod-i18n/runtime",

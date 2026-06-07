@@ -1,22 +1,33 @@
 <template>
     <div v-if="project" class="min-h-screen bg-comma-neutral-50" :dir="direction">
-        <!-- Hero Section with Parallax Background -->
+        <!-- Lead-first hero -->
         <section
-            class="relative h-[80vh] min-h-[650px] flex items-center justify-center overflow-hidden bg-cover bg-center bg-fixed"
+            class="relative min-h-screen flex items-center overflow-hidden bg-cover bg-center bg-fixed py-28 lg:py-32"
             :style="{ backgroundImage: `url(${heroImage})` }">
             <div class="absolute inset-0 bg-black/50"></div>
-            <div class="relative z-10 text-center text-white px-4 max-w-4xl mx-auto animate-fade-in-up">
-                <div v-if="projectBadge" class="inline-block mb-4">
-                    <span class="px-3 py-1 bg-comma-primary text-white text-sm font-semibold rounded-full">
-                        {{ projectBadge }}
-                    </span>
+            <div class="container relative z-10 mx-auto px-4">
+                <div class="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
+                    <div class="max-w-4xl animate-fade-in-up text-white">
+                        <div v-if="projectBadge" class="mb-4 inline-block">
+                            <span class="rounded-full bg-comma-primary px-3 py-1 text-sm font-semibold text-white">
+                                {{ projectBadge }}
+                            </span>
+                        </div>
+                        <h1 class="mb-4 font-display text-4xl font-bold md:text-5xl lg:text-6xl">
+                            {{ projectTitle }}
+                        </h1>
+                        <p class="max-w-2xl text-lg leading-relaxed text-white/90 md:text-xl">
+                            {{ projectDescription }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl bg-white p-5 shadow-2xl lg:p-6">
+                        <h2 class="mb-4 font-display text-2xl font-bold text-comma-neutral-900">
+                            {{ $t('contact_page.form_title') || 'Send Inquiry' }}
+                        </h2>
+                        <ProjectLeadForm :project="project" />
+                    </div>
                 </div>
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-4">
-                    {{ projectTitle }}
-                </h1>
-                <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
-                    {{ projectDescription }}
-                </p>
             </div>
         </section>
 

@@ -167,7 +167,7 @@
 
             <!-- Agents Grid (only visible agents) -->
             <div v-else-if="sortedAgents.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
-              <div v-for="agent in sortedAgents" :key="agent.id"
+              <div v-for="agent in sortedAgents" :key="agentKey(agent)"
                 class="bg-white rounded-2xl shadow-card overflow-hidden group hover:shadow-hover transition-all duration-500 hover:-translate-y-1 border border-comma-border-subtle h-full flex flex-col">
                 <div class="flex flex-col lg:flex-row h-full">
                   <!-- Agent Portrait -->
@@ -233,7 +233,7 @@
 
                     <!-- Button (Always Bottom) -->
                     <div class="mt-auto">
-                      <NuxtLink :to="localePath(`/agents/${agent.id}-${agent.slug || agent.id}`)"
+                      <NuxtLink :to="localePath(`/agents/${agentKey(agent)}-${agentSlug(agent)}`)"
                         class="block w-full py-3 bg-gradient-to-r from-comma-primary to-comma-primary-dark text-white text-center font-semibold rounded-xl hover:from-comma-primary-dark hover:to-comma-primary transition-all duration-300 group/btn shadow-md">
                         <span class="flex items-center justify-center gap-2">
                           {{ $t('agents_page.view_profile') }}
@@ -460,6 +460,16 @@ const isFilterOpen = ref(false)
 function fullName(agent: Agent): string {
   const parts = [agent.first_name, agent.last_name].filter(Boolean)
   return parts.join(' ') || 'Unnamed'
+}
+
+function agentKey(agent: Agent): number {
+  return Number(agent.agent_id ?? agent.id)
+}
+
+function agentSlug(agent: Agent): string {
+  const localizedSlug = locale.value === 'ar' ? agent.slug_ar : agent.slug_en
+  const fallbackName = fullName(agent).toLowerCase().trim().replace(/[^a-z0-9\u0600-\u06FF]+/g, '-').replace(/^-|-$/g, '')
+  return String(localizedSlug || agent.slug || fallbackName || agentKey(agent))
 }
 
 // Helper: calculate years of experience

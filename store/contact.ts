@@ -15,6 +15,18 @@ interface ContactState {
   error: string | null
 }
 
+function normalizePaginatedResponse(response: any): PaginatedResponse<ContactMessage> {
+  if (Array.isArray(response?.data)) {
+    return response as PaginatedResponse<ContactMessage>
+  }
+
+  if (response?.status === 1 && Array.isArray(response?.data?.data)) {
+    return response.data as PaginatedResponse<ContactMessage>
+  }
+
+  throw new Error(response?.message || 'Invalid contact response')
+}
+
 export const useContactStore = defineStore('contact', {
   state: (): ContactState => ({
     messages: [],
@@ -46,14 +58,16 @@ export const useContactStore = defineStore('contact', {
           query: params,
         })
         if (error.value) throw error.value
-        const result = data.value as PaginatedResponse<ContactMessage>
-        this.messages = result.data
-        this.pagination = {
-          currentPage: result.meta.current_page,
-          lastPage: result.meta.last_page,
-          perPage: result.meta.per_page,
-          total: result.meta.total,
-        }
+        const result = normalizePaginatedResponse(data.value)
+        this.messages = result.data || []
+        this.pagination = result.meta
+          ? {
+              currentPage: result.meta.current_page,
+              lastPage: result.meta.last_page,
+              perPage: result.meta.per_page,
+              total: result.meta.total,
+            }
+          : null
         return result
       } catch (err: any) {
         this.error = err.message
