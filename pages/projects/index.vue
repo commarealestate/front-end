@@ -158,16 +158,21 @@ async function fetchProjects(resetPage = true) {
     try {
         const params: any = {
             per_page: 9,
-            page: currentPage.value
+            page: currentPage.value,
+            status: 'Published'
         }
         if (searchTitle.value) params.title = searchTitle.value
         if (badgeFilter.value) params.badge = badgeFilter.value
 
         const result = await store.fetchProjects(params)
+        const visibleProjects = result.projects.filter((project) => {
+            if (!project.status) return true
+            return String(project.status).toLowerCase() === 'published'
+        })
         if (resetPage) {
-            projects.value = result.projects
+            projects.value = visibleProjects
         } else {
-            projects.value = [...projects.value, ...result.projects]
+            projects.value = [...projects.value, ...visibleProjects]
         }
         hasNextPage.value = currentPage.value < (result.pagination?.lastPage || 1)
     } catch (error) {

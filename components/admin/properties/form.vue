@@ -224,6 +224,47 @@
               </div>
             </div>
           </div>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-comma-neutral-700 mb-1">Floor Plans</label>
+              <p class="text-xs text-comma-neutral-500">Floor plans are uploaded separately and are not part of the property gallery.</p>
+            </div>
+            <UInput
+              type="file"
+              multiple
+              accept="image/*,application/pdf"
+              @change="handleFloorPlanUpload"
+            />
+            <div v-if="existingFloorPlans.length || newFloorPlans.length" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div v-for="plan in existingFloorPlans" :key="plan" class="relative group rounded border border-comma-border-subtle p-2">
+                <img v-if="isImagePath(plan)" :src="plan" class="w-full h-28 object-contain rounded bg-comma-neutral-50" />
+                <div v-else class="flex h-28 items-center justify-center rounded bg-comma-neutral-50 text-sm font-medium text-comma-neutral-700">
+                  Floor Plan
+                </div>
+                <button
+                  type="button"
+                  class="absolute top-1 right-1 p-1 bg-white rounded-full shadow opacity-0 group-hover:opacity-100"
+                  @click="removeExistingFloorPlan(plan)"
+                >
+                  <AdminLocalIcon name="x-mark" class="w-4 h-4 text-red-600" />
+                </button>
+              </div>
+              <div v-for="(file, idx) in newFloorPlans" :key="`floor-${idx}-${file.name}`" class="relative group rounded border border-comma-border-subtle p-2">
+                <img v-if="file.type.startsWith('image/')" :src="getFilePreview(file)" class="w-full h-28 object-contain rounded bg-comma-neutral-50" />
+                <div v-else class="flex h-28 items-center justify-center rounded bg-comma-neutral-50 text-sm font-medium text-comma-neutral-700">
+                  {{ file.name }}
+                </div>
+                <button
+                  type="button"
+                  class="absolute top-1 right-1 p-1 bg-white rounded-full shadow opacity-0 group-hover:opacity-100"
+                  @click="removeNewFloorPlan(idx)"
+                >
+                  <AdminLocalIcon name="x-mark" class="w-4 h-4 text-red-600" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </UCard>
 
@@ -288,8 +329,10 @@ const features = ref<Array<{ key: string; value: string }>>([])
 const amenities = ref<string[]>([])
 const existingCoverImages = ref<string[]>([])
 const existingGalleryImages = ref<string[]>([])
+const existingFloorPlans = ref<string[]>([])
 const newCoverImages = ref<File[]>([])
 const newGalleryImages = ref<File[]>([])
+const newFloorPlans = ref<File[]>([])
 const imagesToDelete = ref<string[]>([])
 const filePreviews = new WeakMap<File, string>()
 
@@ -318,6 +361,7 @@ const statusOptions = [
 onUnmounted(() => {
   newCoverImages.value.forEach(revokeFilePreview)
   newGalleryImages.value.forEach(revokeFilePreview)
+  newFloorPlans.value.forEach(revokeFilePreview)
 })
 
 function readText(value: any): string {
@@ -402,6 +446,7 @@ onMounted(async () => {
       // Images
       existingCoverImages.value = Array.isArray(p.cover_image) ? p.cover_image : []
       existingGalleryImages.value = Array.isArray(p.property_photos) ? p.property_photos : []
+      existingFloorPlans.value = Array.isArray(p.floor_plan) ? p.floor_plan : (p.floor_plan ? [p.floor_plan] : [])
     }
   }
 })
@@ -448,6 +493,14 @@ function handleGalleryUpload(event: Event) {
   }
 }
 
+function handleFloorPlanUpload(event: Event) {
+  const target = event.target as HTMLInputElement
+  if (target.files) {
+    newFloorPlans.value.push(...Array.from(target.files))
+    target.value = ''
+  }
+}
+
 function removeNewCoverImage(index: number) {
   const [file] = newCoverImages.value.splice(index, 1)
   revokeFilePreview(file)
@@ -455,6 +508,11 @@ function removeNewCoverImage(index: number) {
 
 function removeNewGalleryImage(index: number) {
   const [file] = newGalleryImages.value.splice(index, 1)
+  revokeFilePreview(file)
+}
+
+function removeNewFloorPlan(index: number) {
+  const [file] = newFloorPlans.value.splice(index, 1)
   revokeFilePreview(file)
 }
 
@@ -466,6 +524,15 @@ function removeExistingCoverImage(img: string) {
 function removeExistingGalleryImage(img: string) {
   existingGalleryImages.value = existingGalleryImages.value.filter(i => i !== img)
   imagesToDelete.value.push(img)
+}
+
+function removeExistingFloorPlan(plan: string) {
+  existingFloorPlans.value = existingFloorPlans.value.filter(i => i !== plan)
+  imagesToDelete.value.push(plan)
+}
+
+function isImagePath(path: string) {
+  return /\.(png|jpe?g|gif|webp|avif|svg)(\?.*)?$/i.test(path)
 }
 
 function revokeFilePreview(file?: File) {
@@ -536,6 +603,11 @@ async function handleSubmit() {
     // Append new gallery images
     newGalleryImages.value.forEach((file) => {
       formData.append('property_photos[]', file)
+    })
+
+    // Append new floor plans separately from the public gallery
+    newFloorPlans.value.forEach((file) => {
+      formData.append('floor_plan[]', file)
     })
 
     // For edit mode, we need to handle deleted images by calling deleteImage API separately

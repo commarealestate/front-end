@@ -2,6 +2,7 @@
 import { defineStore } from "pinia";
 import type {
   NormalizedProperty,
+  PaymentScheduleItem,
   RawApiProperty,
   ApiPaginatedResponse,
 } from "~/types/property";
@@ -21,6 +22,29 @@ function asStringArray(value: any): string[] {
   if (typeof value === "string" && value) return [value];
 
   return [];
+}
+
+function asPaymentSchedule(value: any): PaymentScheduleItem[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (typeof item === "string") {
+        return { description: item };
+      }
+
+      if (item && typeof item === "object") {
+        return {
+          percentage: item.percentage ?? item.percent ?? null,
+          frequency: item.frequency ?? null,
+          duration: item.duration ?? null,
+          description: item.description ?? item.title ?? null,
+        };
+      }
+
+      return null;
+    })
+    .filter((item): item is PaymentScheduleItem => Boolean(item));
 }
 
 function normalizePropertyType(value: any): string {
@@ -121,10 +145,13 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
   const descArabic = descriptionText.ar;
   const locationEnglish = locationText.en || textValue(raw.location);
   const locationArabic = locationText.ar;
-  const coverImages = asStringArray(raw.cover_image);
-  const propertyPhotos = asStringArray(raw.property_photos);
+  const processedCoverImages = asStringArray(raw.processed_cover_image);
+  const processedPropertyPhotos = asStringArray(raw.processed_property_photos);
+  const coverImages = processedCoverImages.length ? processedCoverImages : asStringArray(raw.cover_image);
+  const propertyPhotos = processedPropertyPhotos.length ? processedPropertyPhotos : asStringArray(raw.property_photos);
   const legacyImages = asStringArray(raw.images);
   const fallbackPhotos = propertyPhotos.length ? propertyPhotos : legacyImages;
+  const floorPlans = asStringArray(raw.floor_plan);
 
   return {
     id: raw.property_id,
@@ -159,8 +186,10 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
     paymentMethod: raw.payment_method || "",
     financialStatus: raw.financial_status || "",
     contractExpiryDate: raw.contract_expiry_date,
-    floorPlan: raw.floor_plan,
+    floorPlan: floorPlans[0] || null,
+    floorPlans,
     qrCode: raw.qr_code_property_booster,
+    guaranteedBadge: raw.guaranteed_badge || null,
     propertyPhotos: fallbackPhotos,
     notes: raw.notes || "",
     price: raw.price,
@@ -187,6 +216,7 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
     amenities: raw.amenities || [],
     view: raw.view || [],
     installments: raw.installments || [],
+    paymentSchedule: asPaymentSchedule(raw.payment_schedule),
     coverImage: coverImages[0] || fallbackPhotos[0] || "",
     allCoverImages: coverImages,
     latitude: raw.latitude || null,
@@ -197,6 +227,11 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
     developerBrief: raw.developer_brief || null,
     securityDeposit: raw.security_deposit,
     acType: raw.ac_type,
+    billingCycle: raw.billing_cycle,
+    chiller: raw.chiller,
+    contractDuration: raw.contract_duration,
+    availabilityStatus: raw.availability_status,
+    paymentPlanDescription: raw.payment_plan_description,
     minimumContractDuration: raw.minimum_contract_duration,
     maximumContractDuration: raw.maximum_contract_duration,
     renewalTerms: raw.renewal_terms,
@@ -204,6 +239,7 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
     internalSize: raw.internal_size,
     externalSize: raw.external_size,
     permitNumber: raw.permit_number,
+    approvalStatus: raw.approval_status,
   };
 }
 

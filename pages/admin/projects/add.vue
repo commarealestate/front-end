@@ -58,6 +58,14 @@
                             <input v-model="form.badge_ar" type="text" placeholder="مميز، جديد"
                                 class="w-full border border-comma-border-subtle rounded-xl px-4 py-2.5" />
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-comma-neutral-800 mb-1">Status</label>
+                            <select v-model="form.status"
+                                class="w-full border border-comma-border-subtle rounded-xl px-4 py-2.5 focus:border-comma-primary transition">
+                                <option value="Published">Published</option>
+                                <option value="Draft">Draft</option>
+                            </select>
+                        </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-comma-neutral-800 mb-1">{{
                                 $t('admin.projects.description_en') }}</label>
@@ -122,6 +130,7 @@ const form = reactive({
     title_ar: '',
     badge_en: '',
     badge_ar: '',
+    status: 'Published',
     description_en: '',
     description_ar: '',
     cover_image: null as File | null,
@@ -152,6 +161,7 @@ async function submitForm() {
         fd.append('title_ar', form.title_ar)
         if (form.badge_en) fd.append('badge_en', form.badge_en)
         if (form.badge_ar) fd.append('badge_ar', form.badge_ar)
+        fd.append('status', form.status)
         if (form.description_en) fd.append('description_en', form.description_en)
         if (form.description_ar) fd.append('description_ar', form.description_ar)
         if (form.cover_image) fd.append('cover_image', form.cover_image)

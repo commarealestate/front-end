@@ -9,6 +9,10 @@ export interface ContactMessage {
   is_read: boolean
   project_id?: number | string | null
   project_title?: string | null
+  property_id?: number | string | null
+  property_reference?: string | null
+  property_title?: string | null
+  listing_agent_id?: number | string | null
   source?: string | null
   page_url?: string | null
   utm_source?: string | null

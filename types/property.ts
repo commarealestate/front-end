@@ -28,8 +28,11 @@ export interface RawApiProperty {
   payment_method?: string;
   financial_status?: string;
   contract_expiry_date?: string | null;
-  floor_plan?: string | null;
+  floor_plan?: string | string[] | null;
+  processed_cover_image?: string[] | string | null;
+  processed_property_photos?: string[] | string | null;
   qr_code_property_booster?: string | null;
+  guaranteed_badge?: string | null;
   property_photos?: string[];
   notes?: string;
   price: number;
@@ -55,6 +58,7 @@ export interface RawApiProperty {
   amenities?: string[];
   view?: string[] | null;
   installments?: string[] | null;
+  payment_schedule?: PaymentScheduleItem[] | string[] | null;
   cover_image?: string[];
   images?: string[];
   latitude?: string | null;
@@ -65,6 +69,11 @@ export interface RawApiProperty {
   developer_brief?: string | null;
   security_deposit?: string | number | null;
   ac_type?: string | null;
+  billing_cycle?: string | null;
+  chiller?: string | null;
+  contract_duration?: string | null;
+  availability_status?: string | null;
+  payment_plan_description?: string | null;
   minimum_contract_duration?: string | null;
   maximum_contract_duration?: string | null;
   renewal_terms?: string | null;
@@ -72,6 +81,14 @@ export interface RawApiProperty {
   internal_size?: string | null;
   external_size?: string | null;
   permit_number?: string | null;
+  approval_status?: string | null;
+}
+
+export interface PaymentScheduleItem {
+  percentage?: string | number | null;
+  frequency?: string | null;
+  duration?: string | null;
+  description?: string | null;
 }
 
 export interface NormalizedProperty {
@@ -108,7 +125,9 @@ export interface NormalizedProperty {
   financialStatus: string;
   contractExpiryDate?: string | null;
   floorPlan?: string | null;
+  floorPlans: string[];
   qrCode?: string | null;
+  guaranteedBadge?: string | null;
   propertyPhotos: string[];
   notes: string;
   price: number;
@@ -134,6 +153,7 @@ export interface NormalizedProperty {
   amenities: string[];
   view: string[];
   installments: string[];
+  paymentSchedule: PaymentScheduleItem[];
   coverImage: string;
   allCoverImages: string[];
   latitude?: string | null;
@@ -144,6 +164,11 @@ export interface NormalizedProperty {
   developerBrief?: string | null;
   securityDeposit?: string | number | null;
   acType?: string | null;
+  billingCycle?: string | null;
+  chiller?: string | null;
+  contractDuration?: string | null;
+  availabilityStatus?: string | null;
+  paymentPlanDescription?: string | null;
   minimumContractDuration?: string | null;
   maximumContractDuration?: string | null;
   renewalTerms?: string | null;
@@ -151,6 +176,7 @@ export interface NormalizedProperty {
   internalSize?: string | null;
   externalSize?: string | null;
   permitNumber?: string | null;
+  approvalStatus?: string | null;
 }
 
 export interface ApiPaginatedResponse<T> {

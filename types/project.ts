@@ -48,6 +48,7 @@ export interface Project {
   badge: string;
   badge_ar: string;
   badge_en: string;
+  status?: "Published" | "Draft" | string | number | null;
   cover_image: string[];
   sections: ProjectSection[];
   gallery: ProjectGallery[];

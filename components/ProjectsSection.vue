@@ -37,10 +37,14 @@ const { locale } = useI18n()
 const localePath = useLocalePath()
 const direction = computed(() => (locale.value === 'ar' ? 'rtl' : 'ltr'))
 const store = useProjectsStore()
-const projects = computed(() => store.projects.slice(0, 3))
+const projects = computed(() =>
+  store.projects
+    .filter((project) => !project.status || String(project.status).toLowerCase() === 'published')
+    .slice(0, 3),
+)
 
 onMounted(() => {
-  store.fetchProjects({ per_page: 3 }).catch((error) => {
+  store.fetchProjects({ per_page: 3, status: 'Published' }).catch((error) => {
     console.error('Failed to fetch homepage projects:', error)
   })
 })

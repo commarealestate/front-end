@@ -353,6 +353,43 @@
               </div>
             </div>
 
+            <!-- Listing-specific Details -->
+            <div v-if="listingSections.length" class="space-y-8">
+              <div v-for="section in listingSections" :key="section.key"
+                class="bg-white rounded-2xl shadow-luxury border border-comma-border-subtle p-6 lg:p-8">
+                <h3 class="text-2xl font-bold text-comma-neutral-900 mb-6 font-display flex items-center gap-2">
+                  <Icon :name="section.icon" class="w-6 h-6 text-comma-primary" />
+                  {{ section.title }}
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div v-for="row in section.rows" :key="row.label" class="flex items-start gap-3">
+                    <Icon :name="row.icon" class="w-5 h-5 text-comma-primary mt-0.5" />
+                    <div>
+                      <div class="text-sm text-comma-neutral-600">{{ row.label }}</div>
+                      <div class="font-medium whitespace-pre-line">{{ row.value }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Floor Plans -->
+            <div v-if="floorPlanImages.length"
+              class="bg-white rounded-2xl shadow-luxury border border-comma-border-subtle p-6 lg:p-8">
+              <h3 class="text-2xl font-bold text-comma-neutral-900 mb-6 font-display flex items-center gap-2">
+                <Icon name="mdi:floor-plan" class="w-6 h-6 text-comma-primary" />
+                {{ $t('property_page.floor_plans') || 'Floor Plans' }}
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button v-for="(plan, idx) in floorPlanImages" :key="plan" type="button"
+                  class="overflow-hidden rounded-xl border border-comma-border-subtle bg-comma-neutral-50 text-left transition hover:border-comma-primary"
+                  @click="openFloorPlan(plan)">
+                  <img :src="plan" :alt="`Floor plan ${idx + 1}`" loading="lazy" class="h-64 w-full object-contain p-3"
+                    @error="handleImageError" />
+                </button>
+              </div>
+            </div>
+
             <!-- Amenities -->
             <div v-if="property.amenities && property.amenities.length"
               class="bg-white rounded-2xl shadow-luxury border border-comma-border-subtle p-6 lg:p-8">
@@ -473,6 +510,49 @@
                 </a>
               </div>
 
+              <!-- Lead Form -->
+              <form class="mt-6 space-y-3 border-t border-comma-border-subtle pt-6" @submit.prevent="submitPropertyLead">
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-comma-neutral-800">
+                    {{ $t('contact_page.form_name') || 'Name' }} *
+                  </label>
+                  <input v-model="leadForm.name" type="text" required
+                    class="w-full rounded-xl border border-comma-border-subtle px-4 py-3 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-comma-neutral-800">
+                    {{ $t('contact_page.form_phone') || 'Phone' }} *
+                  </label>
+                  <input v-model="leadForm.phone" type="tel" required
+                    class="w-full rounded-xl border border-comma-border-subtle px-4 py-3 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-comma-neutral-800">
+                    {{ $t('contact_page.form_email') || 'Email' }} *
+                  </label>
+                  <input v-model="leadForm.email" type="email" required
+                    class="w-full rounded-xl border border-comma-border-subtle px-4 py-3 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20" />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-comma-neutral-800">
+                    {{ $t('contact_page.form_message') || 'Message' }}
+                  </label>
+                  <textarea v-model="leadForm.message" rows="3"
+                    class="w-full resize-none rounded-xl border border-comma-border-subtle px-4 py-3 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20"></textarea>
+                </div>
+                <button type="submit" :disabled="leadSubmitting"
+                  class="flex w-full items-center justify-center gap-2 rounded-xl bg-comma-primary px-5 py-3 font-semibold text-white transition hover:bg-comma-primary-dark disabled:cursor-not-allowed disabled:opacity-70">
+                  <Icon v-if="leadSubmitting" name="mdi:loading" class="h-5 w-5 animate-spin" />
+                  {{ leadSubmitting ? ($t('contact_page.form_submitting') || 'Submitting...') : ($t('contact_page.form_submit') || 'Submit') }}
+                </button>
+                <p v-if="leadSuccessMessage" class="rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                  {{ leadSuccessMessage }}
+                </p>
+                <p v-if="leadErrorMessage" class="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {{ leadErrorMessage }}
+                </p>
+              </form>
+
               <!-- Share Button -->
               <div class="mt-6 pt-6 border-t border-comma-border-subtle">
                 <button @click="copyLink"
@@ -559,12 +639,65 @@ const agent = ref<any>(null)
 const allImages = ref<string[]>([])
 const currentImageIndex = ref(0)
 const lightboxOpen = ref(false)
+const leadSubmitting = ref(false)
+const leadSuccessMessage = ref('')
+const leadErrorMessage = ref('')
+const leadForm = reactive({
+  name: '',
+  phone: '',
+  email: '',
+  message: '',
+})
 
 // Contact info (fallback)
 const defaultPhone = '+971544411700'
 const defaultEmail = 'info@commarealestate.ae'
 const defaultWhatsapp = '971544411700'
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&fit=crop'
+
+type DetailRow = {
+  label: string
+  value: string
+  icon: string
+}
+
+function textValue(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : ''
+  if (typeof value === 'string') return value.trim()
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  return ''
+}
+
+function includesAny(value: string, terms: string[]) {
+  const normalized = value.toLowerCase()
+  return terms.some((term) => normalized.includes(term))
+}
+
+function detailRow(label: string, value: unknown, icon = 'mdi:information-outline'): DetailRow | null {
+  const text = textValue(value)
+  return text ? { label, value: text, icon } : null
+}
+
+function currencyRow(label: string, value: unknown, icon = 'mdi:cash'): DetailRow | null {
+  const text = textValue(value)
+  if (!text) return null
+  const numeric = Number(text)
+  return {
+    label,
+    value: Number.isFinite(numeric) ? formatPrice(numeric) : text,
+    icon,
+  }
+}
+
+function dateRow(label: string, value: unknown, icon = 'mdi:calendar'): DetailRow | null {
+  const text = textValue(value)
+  return text ? { label, value: formatDate(text), icon } : null
+}
+
+function compactRows(rows: Array<DetailRow | null>): DetailRow[] {
+  return rows.filter((row): row is DetailRow => Boolean(row))
+}
 
 // Computed properties
 const propertyTitle = computed(() => {
@@ -578,9 +711,9 @@ const propertyDescription = computed(() => {
 })
 
 const propertySize = computed(() => {
-  if (!property.value) return '—'
+  if (!property.value) return '-'
   const size = property.value.buildUpAreaSqft || property.value.totalAreaSqft
-  return size ? Math.round(Number(size)).toLocaleString() : '—'
+  return size ? Math.round(Number(size)).toLocaleString() : '-'
 })
 
 const heroImage = computed(() => {
@@ -592,6 +725,99 @@ const heroImage = computed(() => {
 const currentMainImage = computed(() => {
   if (allImages.value.length) return allImages.value[currentImageIndex.value]
   return FALLBACK_IMAGE
+})
+
+const listingSearchText = computed(() => {
+  if (!property.value) return ''
+  return [
+    property.value.saleType,
+    property.value.offeringType,
+    property.value.status,
+    property.value.inventoryStatus,
+    property.value.projectStatus,
+  ].filter(Boolean).join(' ')
+})
+
+const isRentalListing = computed(() => includesAny(listingSearchText.value, ['rent', 'rental', 'lease']))
+const isOffPlanListing = computed(() => includesAny(listingSearchText.value, ['off plan', 'off-plan', 'off_plan', 'under construction']))
+const isResaleListing = computed(() => !isRentalListing.value && !isOffPlanListing.value)
+
+const floorPlanImages = computed(() => {
+  if (!property.value) return []
+  const plans = [...property.value.floorPlans]
+  if (property.value.floorPlan && !plans.includes(property.value.floorPlan)) {
+    plans.unshift(property.value.floorPlan)
+  }
+  return plans
+})
+
+const listingSections = computed(() => {
+  if (!property.value) return []
+  const p = property.value
+  const sections: Array<{ key: string; title: string; icon: string; rows: DetailRow[] }> = []
+
+  if (isResaleListing.value) {
+    const rows = compactRows([
+      detailRow('Reference Number', p.referenceNumber, 'mdi:tag'),
+      detailRow('Total Size', p.totalAreaSqft ? `${p.totalAreaSqft} sqft` : '', 'mdi:arrow-expand'),
+      detailRow('Internal Size', p.internalSize ? `${p.internalSize} sqft` : '', 'mdi:floor-plan'),
+      detailRow('External Size', p.externalSize ? `${p.externalSize} sqft` : '', 'mdi:image-filter-hdr'),
+      detailRow('View', p.view?.join(', '), 'mdi:eye'),
+      detailRow('Project Status', p.projectStatus, 'mdi:progress-clock'),
+      detailRow('Project Start Year', p.projectStartYear, 'mdi:calendar-start'),
+      dateRow('Handover Date', p.projectHandoverDate, 'mdi:calendar-check'),
+      detailRow('Developer', p.developers, 'mdi:office-building'),
+      detailRow('Developer Brief', p.developerBrief, 'mdi:file-document-outline'),
+      detailRow('Payment Method', p.paymentMethod, 'mdi:credit-card'),
+    ])
+    if (rows.length) {
+      sections.push({ key: 'resale', title: 'Resale Details', icon: 'mdi:home-city', rows })
+    }
+  }
+
+  if (isRentalListing.value) {
+    const rows = compactRows([
+      currencyRow('Rent Price', p.price, 'mdi:cash'),
+      detailRow('Billing Cycle', p.billingCycle || p.rentalPeriod, 'mdi:calendar-sync'),
+      detailRow('Number of Cheques', p.noOfCheques, 'mdi:checkbook'),
+      detailRow('Furnishing', p.furnished, 'mdi:sofa'),
+      detailRow('Availability', p.availabilityStatus || p.availability, 'mdi:home-clock'),
+      dateRow('Available From', p.availableFrom, 'mdi:calendar-check'),
+      detailRow('Contract Duration', p.contractDuration, 'mdi:file-clock-outline'),
+      detailRow('Minimum Contract Duration', p.minimumContractDuration, 'mdi:timer-sand'),
+      detailRow('Maximum Contract Duration', p.maximumContractDuration, 'mdi:timer-sand-full'),
+      currencyRow('Security Deposit', p.securityDeposit, 'mdi:shield-home'),
+      detailRow('Chiller', p.chiller || p.acType, 'mdi:snowflake'),
+      detailRow('Renewal Terms', p.renewalTerms, 'mdi:file-refresh-outline'),
+      detailRow('Notice Period', p.noticePeriod, 'mdi:bell-outline'),
+    ])
+    if (rows.length) {
+      sections.push({ key: 'rental', title: 'Payment & Lease', icon: 'mdi:key-chain', rows })
+    }
+  }
+
+  if (isOffPlanListing.value) {
+    const schedule = p.paymentSchedule
+      .map((item) => [item.percentage ? `${item.percentage}%` : '', item.frequency, item.duration, item.description].filter(Boolean).join(' - '))
+      .filter(Boolean)
+      .join('\n')
+    const rows = compactRows([
+      detailRow('Developer', p.developers, 'mdi:office-building'),
+      detailRow('Developer Brief', p.developerBrief, 'mdi:file-document-outline'),
+      currencyRow('Down Payment', p.downPaymentPrice, 'mdi:bank'),
+      detailRow('Payment Method', p.paymentMethod, 'mdi:credit-card'),
+      detailRow('Payment Plan Description', p.paymentPlanDescription, 'mdi:text-box-outline'),
+      detailRow('Payment Schedule', schedule, 'mdi:calendar-clock'),
+      detailRow('Project Start Year', p.projectStartYear, 'mdi:calendar-start'),
+      dateRow('Handover Date', p.projectHandoverDate, 'mdi:calendar-check'),
+      detailRow('Project Status', p.projectStatus, 'mdi:progress-clock'),
+    ])
+    if (rows.length) {
+      sections.push({ key: 'off-plan', title: 'Off-plan Details', icon: 'mdi:office-building-plus', rows })
+    }
+  }
+
+  return sections
 })
 
 // Agent display helpers
@@ -684,6 +910,12 @@ function prevImage() {
   }
 }
 
+function openFloorPlan(plan: string) {
+  if (process.client) {
+    window.open(plan, '_blank', 'noopener,noreferrer')
+  }
+}
+
 // Copy link to clipboard
 async function copyLink() {
   try {
@@ -694,14 +926,103 @@ async function copyLink() {
   }
 }
 
+function appendUtmFields(formData: FormData) {
+  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']
+  utmKeys.forEach((key) => {
+    const value = route.query[key]
+    if (typeof value === 'string' && value) {
+      formData.append(key, value)
+    }
+  })
+}
+
+function propertyLeadMessage() {
+  const lines = [
+    leadForm.message.trim(),
+    '',
+    '--- Property Inquiry ---',
+    `Property ID: ${property.value?.id || propertyId}`,
+    `Reference Number: ${property.value?.referenceNumber || ''}`,
+    `Property Title: ${propertyTitle.value}`,
+    `Listing Type: ${property.value?.saleType || property.value?.offeringType || ''}`,
+    `Listing Agent ID: ${property.value?.listingOwner || ''}`,
+    'Source: Property Page',
+  ]
+
+  if (process.client) {
+    lines.push(`Page URL: ${window.location.href}`)
+  }
+
+  return lines.filter((line, index) => line !== '' || index === 1).join('\n')
+}
+
+async function submitPropertyLead() {
+  if (!property.value) return
+
+  leadSubmitting.value = true
+  leadSuccessMessage.value = ''
+  leadErrorMessage.value = ''
+
+  try {
+    const formData = new FormData()
+    formData.append('name', leadForm.name)
+    formData.append('phone', leadForm.phone)
+    formData.append('email', leadForm.email)
+    formData.append('message', propertyLeadMessage())
+    formData.append('property_id', String(property.value.id))
+    formData.append('property_reference', property.value.referenceNumber)
+    formData.append('property_title', propertyTitle.value)
+    formData.append('source', 'Property Page')
+
+    if (property.value.listingOwner) {
+      formData.append('listing_agent_id', String(property.value.listingOwner))
+    }
+
+    if (process.client) {
+      formData.append('page_url', window.location.href)
+    }
+
+    appendUtmFields(formData)
+
+    const { data, error } = await useApiFetch(
+      {
+        apiType: 'common',
+        url: 'contact-us',
+        method: 'POST',
+      },
+      {
+        body: formData,
+      },
+    )
+
+    if (error.value) {
+      throw new Error(error.value?.data?.message || error.value?.message || 'Request failed')
+    }
+
+    if (data.value?.status !== 1) {
+      throw new Error(data.value?.message || 'Request failed')
+    }
+
+    leadForm.name = ''
+    leadForm.phone = ''
+    leadForm.email = ''
+    leadForm.message = ''
+    leadSuccessMessage.value = 'Your request has been sent successfully.'
+  } catch (err: any) {
+    leadErrorMessage.value = err.message || 'Failed to send request.'
+  } finally {
+    leadSubmitting.value = false
+  }
+}
+
 // Formatting helpers
 function formatPrice(price: number) {
-  if (!price && price !== 0) return '—'
+  if (!price && price !== 0) return '-'
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(price)
 }
 
 function formatDate(dateStr?: string) {
-  if (!dateStr) return '—'
+  if (!dateStr) return '-'
   return new Date(dateStr).toLocaleDateString(locale.value === 'ar' ? 'ar-SA' : 'en-US', {
     year: 'numeric',
     month: 'long',

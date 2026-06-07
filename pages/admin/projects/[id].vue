@@ -76,6 +76,13 @@
                                     }}</label>
                                 <input v-model="editForm.badge_ar" class="w-full border rounded-xl px-4 py-2.5" />
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Status</label>
+                                <select v-model="editForm.status" class="w-full border rounded-xl px-4 py-2.5">
+                                    <option value="Published">Published</option>
+                                    <option value="Draft">Draft</option>
+                                </select>
+                            </div>
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium mb-1">{{ $t('admin.projects.description_en')
                                     }}</label>
@@ -580,6 +587,7 @@ const editForm = reactive({
     title_ar: '',
     badge_en: '',
     badge_ar: '',
+    status: 'Published',
     description_en: '',
     description_ar: '',
     remove_cover: false,
@@ -646,6 +654,7 @@ async function loadProject() {
         editForm.title_ar = project.value.title_ar
         editForm.badge_en = project.value.badge_en
         editForm.badge_ar = project.value.badge_ar
+        editForm.status = String(project.value.status || 'Published')
         editForm.description_en = project.value.description_en
         editForm.description_ar = project.value.description_ar
     }
@@ -664,6 +673,7 @@ async function updateBasicInfo() {
         fd.append('title_ar', editForm.title_ar)
         if (editForm.badge_en) fd.append('badge_en', editForm.badge_en)
         if (editForm.badge_ar) fd.append('badge_ar', editForm.badge_ar)
+        fd.append('status', editForm.status)
         if (editForm.description_en) fd.append('description_en', editForm.description_en)
         if (editForm.description_ar) fd.append('description_ar', editForm.description_ar)
         if (editForm.remove_cover) fd.append('remove_cover_image', '1')
