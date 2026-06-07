@@ -14,6 +14,36 @@ function textValue(value: any): string {
   return "";
 }
 
+function asStringArray(value: any): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item) => typeof item === "string" && item);
+  }
+  if (typeof value === "string" && value) return [value];
+
+  return [];
+}
+
+function normalizePropertyType(value: any): string {
+  return textValue(value).toLowerCase().replace(/\s+/g, "_");
+}
+
+function propertyTypeQueryVariants(value: any): string[] {
+  const raw = textValue(value);
+  if (!raw) return [];
+
+  const normalized = raw.toLowerCase().replace(/[_-]+/g, " ");
+  const titleCase = normalized.replace(/\b\w/g, (char) => char.toUpperCase());
+  const compactTitle = titleCase.replace(/\s+/g, "");
+  const lowerCompact = normalized.replace(/\s+/g, "_");
+  const variants = [raw, titleCase, compactTitle, lowerCompact, normalized];
+
+  if (normalized === "apartment") {
+    variants.push("Apartments", "apartments");
+  }
+
+  return [...new Set(variants.filter(Boolean))];
+}
+
 function localizedText(raw: any, field: string): { en: string; ar: string } {
   const value = raw[field];
 
@@ -32,10 +62,9 @@ function localizedText(raw: any, field: string): { en: string; ar: string } {
 }
 
 function normalizeAdminProperty(raw: any) {
-  const coverImages = Array.isArray(raw.cover_image) ? raw.cover_image : [];
-  const propertyPhotos = Array.isArray(raw.property_photos)
-    ? raw.property_photos
-    : [];
+  const coverImages = asStringArray(raw.cover_image);
+  const propertyPhotos = asStringArray(raw.property_photos);
+  const legacyImages = asStringArray(raw.images);
   const images = [...coverImages, ...propertyPhotos];
   const titleText = localizedText(raw, "title");
   const descriptionText = localizedText(raw, "description");
@@ -58,9 +87,10 @@ function normalizeAdminProperty(raw: any) {
     size: raw.size ?? raw.total_area_sqft ?? "",
     original_price: raw.original_price ?? raw.price ?? null,
     featured: raw.featured ?? raw.show_on_website ?? false,
-    images,
+    images: images.length ? images : legacyImages,
     cover_image: coverImages,
     property_photos: propertyPhotos,
+    floor_plan: raw.floor_plan || null,
   };
 }
 
@@ -73,6 +103,10 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
   const titleArabic = textValue(raw.title?.arabic);
   const descEnglish = textValue(raw.description?.english);
   const descArabic = textValue(raw.description?.arabic);
+  const coverImages = asStringArray(raw.cover_image);
+  const propertyPhotos = asStringArray(raw.property_photos);
+  const legacyImages = asStringArray(raw.images);
+  const fallbackPhotos = propertyPhotos.length ? propertyPhotos : legacyImages;
 
   return {
     id: raw.property_id,
@@ -107,7 +141,7 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
     contractExpiryDate: raw.contract_expiry_date,
     floorPlan: raw.floor_plan,
     qrCode: raw.qr_code_property_booster,
-    propertyPhotos: raw.property_photos || [],
+    propertyPhotos: fallbackPhotos,
     notes: raw.notes || "",
     price: raw.price,
     status: raw.status || "",
@@ -122,7 +156,7 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
       raw.has_parking_on_site === true || raw.has_parking_on_site === "Y",
     permitIssueDate: raw.permit_issue_date,
     hasKitchen: raw.has_kitchen === true || raw.has_kitchen === "Y",
-    propertyType: raw.property_type || "",
+    propertyType: normalizePropertyType(raw.property_type),
     saleType: raw.sale_type || "",
     buildUpAreaSqft: raw.build_up_area_sqft,
     listingOwner: raw.listing_owner,
@@ -133,8 +167,8 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
     amenities: raw.amenities || [],
     view: raw.view || [],
     installments: raw.installments || [],
-    coverImage: raw.cover_image?.[0] || "",
-    allCoverImages: raw.cover_image || [],
+    coverImage: coverImages[0] || fallbackPhotos[0] || "",
+    allCoverImages: coverImages,
     latitude: raw.latitude || null,
     longitude: raw.longitude || null,
     investmentInsight: raw.investment_insight || null,
@@ -230,11 +264,16 @@ export const usePropertiesStore = defineStore("properties", {
       this.livePropertiesError = null;
 
       // Always filter only Live inventory
-      const queryParams = {
+      const queryParams: Record<string, any> = {
         inventory_status: "Live",
         per_page: params.per_page || 12,
         ...params,
       };
+
+      const propertyTypeVariants = propertyTypeQueryVariants(queryParams.property_type);
+      if (propertyTypeVariants.length) {
+        queryParams.property_type = propertyTypeVariants[0];
+      }
 
       // Remove undefined/null values
       Object.keys(queryParams).forEach((key) => {
@@ -244,22 +283,39 @@ export const usePropertiesStore = defineStore("properties", {
       });
 
       try {
-        const { data, error } = await useApiFetch(
-          {
-            apiType: "common",
-            url: "properties",
-            method: "GET",
-          },
-          {
-            query: queryParams,
-          },
-        );
+        let response: ApiPaginatedResponse<RawApiProperty> | null = null;
+        let lastError: any = null;
+        const attempts = propertyTypeVariants.length ? propertyTypeVariants : [undefined];
 
-        if (error.value) throw error.value;
+        for (const propertyType of attempts) {
+          const query = { ...queryParams };
+          if (propertyType) query.property_type = propertyType;
 
-        const response = data.value as ApiPaginatedResponse<RawApiProperty>;
-        if (response.status !== 1) {
-          throw new Error(response.message || "Failed to fetch properties");
+          const { data, error } = await useApiFetch(
+            {
+              apiType: "common",
+              url: "properties",
+              method: "GET",
+            },
+            {
+              query,
+            },
+          );
+
+          if (error.value) {
+            lastError = error.value;
+            continue;
+          }
+
+          response = data.value as ApiPaginatedResponse<RawApiProperty>;
+          if ((response.data || []).length || !propertyTypeVariants.length) {
+            break;
+          }
+        }
+
+        if (!response && lastError) throw lastError;
+        if (!response || response.status !== 1) {
+          throw new Error(response?.message || "Failed to fetch properties");
         }
 
         const rawProperties = response.data || [];

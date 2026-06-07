@@ -118,26 +118,6 @@ export default defineNuxtConfig({
   },
 
   vite: {
-    environments: {
-      client: {
-        build: {
-          rollupOptions: {
-            input: {
-              entry: "node_modules/nuxt/dist/app/entry.js",
-            },
-          },
-        },
-      },
-      ssr: {
-        build: {
-          rollupOptions: {
-            input: {
-              server: "node_modules/nuxt/dist/app/entry.js",
-            },
-          },
-        },
-      },
-    },
     server: {
       watch: {
         ignored: ["**/.nuxt/**", "**/.output/**", "**/nuxt-dev*.log"],

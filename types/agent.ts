@@ -1,19 +1,25 @@
 export interface Agent {
+  [key: string]: any
   agent_id: number
+  id?: number
   slug: string | null
   slug_en: string | null
   slug_ar: string | null
   xml_id: string | null
   first_name: string
+  name?: string | null
+  second_name?: string | null
+  middle_name?: string | null
   last_name: string
   e_mail: string                       // primary email from CRM
   departments: string[]
   agent_type: string
-  show_on_website: string
+  show_on_website: string | boolean
   agent_description: string
   specialties: string
   service_area: string
   company_e_mail: string
+  photo?: string[]
   cre: number
   active: boolean                      // boolean, not string
   // Additional fields (kept for compatibility, many may be null)

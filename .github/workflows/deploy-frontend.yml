@@ -1,0 +1,84 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate static build
+        run: npm run generate
+        env:
+          ADMIN_AUTH_API_URL: https://api.commarealestate.ae/api/v1/auth/admins
+          ADMIN_API_URL: https://api.commarealestate.ae/api/v1/admins
+          COMMON_API_URL: https://api.commarealestate.ae/api/v1/common
+          GENERAL_API_URL: https://api.commarealestate.ae/api/v1/general
+          NUXT_PUBLIC_GA_ID: G-JQQNW5P5EN
+
+      - name: Package build
+        run: |
+          cd .output/public
+          zip -r ../../frontend-build.zip .
+
+      - name: Upload and deploy
+        env:
+          HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+          HOSTINGER_USER: ${{ secrets.HOSTINGER_USER }}
+          HOSTINGER_PASSWORD: ${{ secrets.HOSTINGER_PASSWORD }}
+          HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+        run: |
+          set -euo pipefail
+
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+          sshpass -p "$HOSTINGER_PASSWORD" scp \
+            -P "$HOSTINGER_PORT" \
+            -o StrictHostKeyChecking=no \
+            frontend-build.zip \
+            "$HOSTINGER_USER@$HOSTINGER_HOST:~/frontend-build.zip"
+
+          sshpass -p "$HOSTINGER_PASSWORD" ssh \
+            -p "$HOSTINGER_PORT" \
+            -o StrictHostKeyChecking=no \
+            "$HOSTINGER_USER@$HOSTINGER_HOST" \
+            'set -euo pipefail
+
+             WEBROOT="$HOME/domains/commarealestate.ae/public_html"
+             ZIP="$HOME/frontend-build.zip"
+
+             test -d "$WEBROOT"
+             test -f "$ZIP"
+
+             mkdir -p "$HOME/backups"
+             cd "$WEBROOT"
+
+             tar -czf "$HOME/backups/frontend-before-$(date +%F-%H%M).tar.gz" .
+
+             find . -mindepth 1 -maxdepth 1 \
+               ! -name apps \
+               ! -name "api_old_*" \
+               ! -name "public_html_old_*" \
+               -exec rm -rf {} \;
+
+             unzip -o "$ZIP" -d "$WEBROOT"
+             rm -f "$ZIP"
+
+             curl -I https://commarealestate.ae
+             curl -I https://api.commarealestate.ae'

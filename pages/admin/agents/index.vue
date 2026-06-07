@@ -4,15 +4,15 @@
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 class="text-2xl font-display font-bold text-comma-neutral-900">
-          {{ $t('admin_agents_page.title') }}
+          {{ t('admin_agents_page.title') }}
         </h1>
         <UButton
           color="primary"
           variant="solid"
-          icon="i-heroicons-plus"
           :to="localePath('/admin/agents/new')"
         >
-          {{ $t('admin_agents_page.add_new') }}
+          <AdminLocalIcon name="plus" class="w-4 h-4" />
+          {{ t('admin_agents_page.add_new') }}
         </UButton>
       </div>
 
@@ -21,7 +21,7 @@
 
       <!-- Loading -->
       <div v-if="store.loading" class="flex justify-center py-12">
-        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin text-comma-primary" />
+        <AdminLocalIcon name="arrow-path" class="w-8 h-8 animate-spin text-comma-primary" />
       </div>
 
       <!-- Grid -->
@@ -36,12 +36,12 @@
 
       <!-- Empty state -->
       <div v-else class="text-center py-16 bg-comma-surface-elevated rounded-xl">
-        <UIcon name="i-heroicons-users" class="w-16 h-16 mx-auto text-comma-neutral-400" />
+        <AdminLocalIcon name="users" class="w-16 h-16 mx-auto text-comma-neutral-400" />
         <h3 class="mt-4 text-lg font-medium text-comma-neutral-700">
-          {{ $t('admin_agents_page.no_agents') }}
+          {{ t('admin_agents_page.no_agents') }}
         </h3>
         <p class="text-comma-neutral-500">
-          {{ $t('admin_agents_page.no_agents_desc') }}
+          {{ t('admin_agents_page.no_agents_desc') }}
         </p>
         <UButton
           color="primary"
@@ -49,7 +49,7 @@
           class="mt-4"
           :to="localePath('/admin/agents/new')"
         >
-          {{ $t('admin_agents_page.add_first') }}
+          {{ t('admin_agents_page.add_first') }}
         </UButton>
       </div>
 
@@ -73,7 +73,7 @@ import type { Agent } from '~/types/agent'
 
 const store = useAgentsStore()
 const localePath = useLocalePath()
-const { locale } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 

@@ -6,8 +6,8 @@
       <div class="relative aspect-[4/3] overflow-hidden bg-comma-neutral-100">
         
         <img
-          v-if="agent.personal_photo && agent.personal_photo.length"
-          :src="agent.personal_photo[0]"
+          v-if="primaryPhoto"
+          :src="primaryPhoto"
           :alt="fullName"
           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
@@ -17,7 +17,7 @@
           v-else
           class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-comma-neutral-400"
         >
-          <Icon name="i-heroicons-user" class="w-20 h-20" />
+          <AdminLocalIcon name="user" class="w-20 h-20" />
           <span class="text-xs mt-2">No Image</span>
         </div>
 
@@ -26,7 +26,7 @@
           class="absolute top-3 left-3 px-2 py-1 text-xs font-semibold rounded"
           :class="agent.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
         >
-          {{ agent.active ? $t('admin_agents_page.active') : $t('admin_agents_page.inactive') }}
+          {{ agent.active ? t('admin_agents_page.active') : t('admin_agents_page.inactive') }}
         </span>
       </div>
     </NuxtLink>
@@ -53,11 +53,11 @@
       <!-- Contact -->
       <div class="mt-3 space-y-1 text-sm text-comma-neutral-700 min-h-[48px]">
         <div v-if="agent.email" class="flex items-center gap-2">
-          <Icon name="i-heroicons-envelope" class="w-4 h-4 text-comma-primary" />
+          <AdminLocalIcon name="envelope" class="w-4 h-4 text-comma-primary" />
           <span class="truncate">{{ agent.email }}</span>
         </div>
         <div v-if="agent.personal_mobile" class="flex items-center gap-2">
-          <Icon name="i-heroicons-phone" class="w-4 h-4 text-comma-primary" />
+          <AdminLocalIcon name="phone" class="w-4 h-4 text-comma-primary" />
           <span>{{ agent.personal_mobile }}</span>
         </div>
       </div>
@@ -90,10 +90,11 @@
         <UButton
           color="gray"
           variant="ghost"
-          icon="i-heroicons-pencil-square"
           :to="localePath(`/admin/agents/${agent.agent_id}/edit`)"
           size="sm"
-        />
+        >
+          <AdminLocalIcon name="pencil-square" class="w-4 h-4" />
+        </UButton>
       </div>
     </div>
   </div>
@@ -110,10 +111,14 @@ defineEmits<{
 }>()
 
 const localePath = useLocalePath()
-const { locale } = useI18n()
+const { t } = useI18n()
 
 const fullName = computed(() => {
   const parts = [props.agent.name, props.agent.second_name, props.agent.last_name].filter(Boolean)
   return parts.join(' ') || 'Unnamed'
+})
+
+const primaryPhoto = computed(() => {
+  return props.agent.personal_photo?.[0] || props.agent.photo?.[0] || ''
 })
 </script>

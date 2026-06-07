@@ -1,153 +1,114 @@
 <template>
+  <div v-if="store.loading" class="flex justify-center py-12">
+    <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin text-comma-primary" />
+  </div>
 
-    <div v-if="store.loading" class="flex justify-center py-12">
-      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin text-comma-primary" />
-    </div>
-    <div v-else-if="agent" class="max-w-4xl mx-auto space-y-8">
-      <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 class="text-2xl font-display font-bold text-comma-neutral-900">
-          {{ fullName }}
-        </h1>
-        <div class="flex gap-2">
-          <UButton
-            color="primary"
-            variant="outline"
-            icon="i-heroicons-pencil-square"
-            :to="localePath(`/admin/agents/${agent.agent_id}/edit`)"
-          >
-            {{ $t('admin_agents_page.edit') }}
-          </UButton>
-          <UButton
-            color="red"
-            variant="outline"
-            icon="i-heroicons-trash"
-            @click="confirmDelete"
-          >
-            {{ $t('admin_agents_page.delete') }}
-          </UButton>
+  <div v-else-if="agent" class="max-w-7xl mx-auto space-y-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div class="flex flex-col gap-4 sm:flex-row">
+        <div class="w-36 h-36 rounded-xl overflow-hidden bg-comma-neutral-100 shrink-0 border border-comma-border-subtle">
+          <img v-if="primaryPhoto" :src="primaryPhoto" :alt="fullName" class="w-full h-full object-cover" />
+          <div v-else class="w-full h-full flex items-center justify-center text-comma-neutral-400">
+            <AdminLocalIcon name="user-circle" class="w-24 h-24" />
+          </div>
         </div>
-      </div>
 
-      <!-- Agent Info Card -->
-      <div class="bg-white rounded-2xl shadow-card p-6 lg:p-8">
-        <div class="flex flex-col md:flex-row gap-8">
-          <!-- Photo -->
-          <div class="md:w-1/3">
-            <div class="rounded-xl overflow-hidden bg-comma-neutral-100">
-              <img
-                v-if="agent.personal_photo?.length"
-                :src="agent.personal_photo[0]"
-                :alt="fullName"
-                class="w-full h-auto"
-              />
-              <div v-else class="aspect-square flex items-center justify-center text-comma-neutral-400">
-                <Icon name="i-heroicons-user-circle" class="w-32 h-32" />
-              </div>
-            </div>
+        <div class="space-y-3">
+          <div>
+            <p class="text-sm text-comma-neutral-500">Agent #{{ agent.agent_id }}</p>
+            <h1 class="text-3xl font-display font-bold text-comma-neutral-900">
+              {{ fullName }}
+            </h1>
+            <p v-if="primaryPosition" class="text-comma-primary font-medium mt-1">{{ primaryPosition }}</p>
           </div>
 
-          <!-- Details -->
-          <div class="md:w-2/3 space-y-4">
-            <div class="flex items-center gap-2">
-              <span
-                class="px-3 py-1 rounded-full text-sm font-semibold"
-                :class="agent.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-              >
-                {{ agent.active ? $t('admin_agents_page.active') : $t('admin_agents_page.inactive') }}
-              </span>
-              <span v-if="agent.work_position" class="text-comma-primary font-medium">{{ agent.work_position }}</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div v-if="agent.email">
-                <div class="text-sm text-comma-neutral-600">Email</div>
-                <div class="font-medium">{{ agent.email }}</div>
-              </div>
-              <div v-if="agent.personal_mobile">
-                <div class="text-sm text-comma-neutral-600">Mobile</div>
-                <div class="font-medium">{{ agent.personal_mobile }}</div>
-              </div>
-              <div v-if="agent.personal_phone">
-                <div class="text-sm text-comma-neutral-600">Phone</div>
-                <div class="font-medium">{{ agent.personal_phone }}</div>
-              </div>
-              <div v-if="agent.personal_city">
-                <div class="text-sm text-comma-neutral-600">City</div>
-                <div class="font-medium">{{ agent.personal_city }}</div>
-              </div>
-              <div v-if="agent.personal_birthday">
-                <div class="text-sm text-comma-neutral-600">Birthday</div>
-                <div class="font-medium">{{ formatDate(agent.personal_birthday) }}</div>
-              </div>
-              <div v-if="agent.uf_employment_date">
-                <div class="text-sm text-comma-neutral-600">Employment Date</div>
-                <div class="font-medium">{{ formatDate(agent.uf_employment_date) }}</div>
-              </div>
-            </div>
-
-            <!-- Work Info -->
-            <div class="pt-4 border-t border-comma-border-subtle">
-              <h3 class="text-lg font-semibold mb-3">Work Details</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div v-if="agent.work_company">
-                  <div class="text-sm text-comma-neutral-600">Company</div>
-                  <div class="font-medium">{{ agent.work_company }}</div>
-                </div>
-                <div v-if="agent.work_department">
-                  <div class="text-sm text-comma-neutral-600">Department</div>
-                  <div class="font-medium">{{ agent.work_department }}</div>
-                </div>
-                <div v-if="agent.work_phone">
-                  <div class="text-sm text-comma-neutral-600">Work Phone</div>
-                  <div class="font-medium">{{ agent.work_phone }}</div>
-                </div>
-                <div v-if="agent.work_www">
-                  <div class="text-sm text-comma-neutral-600">Website</div>
-                  <div class="font-medium">
-                    <a :href="agent.work_www" target="_blank" class="text-comma-primary hover:underline">{{ agent.work_www }}</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Service Areas -->
-            <div v-if="agent.service_areas?.length" class="pt-4 border-t border-comma-border-subtle">
-              <h3 class="text-lg font-semibold mb-3">Service Areas</h3>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="area in agent.service_areas"
-                  :key="area.service_area_id"
-                  class="px-3 py-1 bg-comma-primary/10 text-comma-primary rounded-full text-sm"
-                >
-                  {{ area.name }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Social Links -->
-            <div v-if="hasSocialLinks" class="pt-4 border-t border-comma-border-subtle">
-              <h3 class="text-lg font-semibold mb-3">Social</h3>
-              <div class="flex gap-3">
-                <a v-if="agent.uf_linkedin" :href="agent.uf_linkedin" target="_blank" class="text-[#0A66C2] hover:opacity-80">
-                  <Icon name="mdi:linkedin" class="w-6 h-6" />
-                </a>
-                <a v-if="agent.uf_facebook" :href="agent.uf_facebook" target="_blank" class="text-[#1877F2] hover:opacity-80">
-                  <Icon name="mdi:facebook" class="w-6 h-6" />
-                </a>
-                <a v-if="agent.uf_twitter" :href="agent.uf_twitter" target="_blank" class="text-[#1DA1F2] hover:opacity-80">
-                  <Icon name="mdi:twitter" class="w-6 h-6" />
-                </a>
-                <a v-if="agent.uf_skype" :href="`skype:${agent.uf_skype}?chat`" class="text-[#00AFF0] hover:opacity-80">
-                  <Icon name="mdi:skype" class="w-6 h-6" />
-                </a>
-              </div>
-            </div>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-3 py-1 rounded-full text-sm font-semibold" :class="agent.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+              {{ agent.active ? t('admin_agents_page.active') : t('admin_agents_page.inactive') }}
+            </span>
+            <span class="px-3 py-1 rounded-full text-sm font-semibold" :class="isWebsiteVisible ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'">
+              {{ isWebsiteVisible ? 'Visible on website' : 'Hidden from website' }}
+            </span>
+            <span v-if="agent.cre" class="px-3 py-1 rounded-full text-sm font-semibold bg-comma-primary/10 text-comma-primary">
+              CRE {{ agent.cre }}
+            </span>
           </div>
         </div>
       </div>
+
+      <div class="flex gap-2">
+        <UButton color="primary" variant="outline" icon="i-heroicons-pencil-square" :to="localePath(`/admin/agents/${agent.agent_id}/edit`)">
+          {{ t('admin_agents_page.edit') }}
+        </UButton>
+        <UButton color="red" variant="outline" icon="i-heroicons-trash" @click="confirmDelete">
+          {{ t('admin_agents_page.delete') }}
+        </UButton>
+      </div>
     </div>
- 
+
+    <div v-if="agent.agent_description || agent.personal_notes || agent.work_notes" class="bg-white rounded-xl shadow-card border border-comma-border-subtle p-6">
+      <h2 class="text-lg font-semibold text-comma-neutral-900 mb-3">Notes & Description</h2>
+      <div class="space-y-4 text-comma-neutral-700 leading-relaxed">
+        <div v-if="agent.agent_description">
+          <div class="text-xs uppercase text-comma-neutral-500 font-semibold mb-1">Agent Description</div>
+          <p class="whitespace-pre-line">{{ agent.agent_description }}</p>
+        </div>
+        <div v-if="agent.personal_notes">
+          <div class="text-xs uppercase text-comma-neutral-500 font-semibold mb-1">Personal Notes</div>
+          <p class="whitespace-pre-line">{{ agent.personal_notes }}</p>
+        </div>
+        <div v-if="agent.work_notes">
+          <div class="text-xs uppercase text-comma-neutral-500 font-semibold mb-1">Work Notes</div>
+          <p class="whitespace-pre-line">{{ agent.work_notes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <section v-for="section in detailSections" :key="section.title" class="bg-white rounded-xl shadow-card border border-comma-border-subtle p-6">
+        <h2 class="text-lg font-semibold text-comma-neutral-900 mb-5">{{ section.title }}</h2>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+          <div v-for="field in section.fields" :key="field.label" class="min-w-0">
+            <dt class="text-xs uppercase tracking-wide text-comma-neutral-500 font-semibold">{{ field.label }}</dt>
+            <dd class="mt-1 text-sm text-comma-neutral-900 break-words">
+              <template v-if="isArrayValue(field.value)">
+                <div v-if="field.value.length" class="flex flex-wrap gap-2">
+                  <a
+                    v-for="item in field.value"
+                    :key="String(item)"
+                    :href="String(item)"
+                    target="_blank"
+                    class="inline-flex items-center gap-1 px-2 py-1 rounded bg-comma-surface-subtle text-comma-primary hover:underline"
+                  >
+                    <AdminLocalIcon name="link" class="w-4 h-4" />
+                    {{ fileName(item) }}
+                  </a>
+                </div>
+                <span v-else class="text-comma-neutral-400">-</span>
+              </template>
+              <template v-else>
+                <span>{{ formatValue(field.value, 'type' in field ? field.type : undefined) }}</span>
+              </template>
+            </dd>
+          </div>
+        </dl>
+      </section>
+    </div>
+
+    <section class="bg-white rounded-xl shadow-card border border-comma-border-subtle p-6">
+      <h2 class="text-lg font-semibold text-comma-neutral-900 mb-5">Service Areas</h2>
+      <div v-if="agent.service_areas?.length" class="flex flex-wrap gap-2">
+        <span v-for="area in agent.service_areas" :key="area.service_area_id" class="px-3 py-1 bg-comma-primary/10 text-comma-primary rounded-full text-sm">
+          {{ area.name || area.name_en || area.name_ar }}
+        </span>
+      </div>
+      <p v-else class="text-sm text-comma-neutral-500">No service areas assigned.</p>
+    </section>
+  </div>
+
+  <div v-else class="max-w-4xl mx-auto py-12 text-center text-comma-neutral-500">
+    Agent not found.
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -156,6 +117,7 @@ import { useAgentsStore } from '~/store/agents'
 const route = useRoute()
 const store = useAgentsStore()
 const localePath = useLocalePath()
+const { t } = useI18n()
 
 const agentId = route.params.id as string
 
@@ -167,16 +129,165 @@ const agent = computed(() => store.agent)
 
 const fullName = computed(() => {
   if (!agent.value) return ''
-  const parts = [agent.value.name, agent.value.second_name, agent.value.last_name].filter(Boolean)
-  return parts.join(' ') || 'Unnamed'
+  const parts = [agent.value.first_name || agent.value.name, agent.value.second_name || agent.value.middle_name, agent.value.last_name].filter(Boolean)
+  return parts.join(' ') || 'Unnamed agent'
 })
 
-const hasSocialLinks = computed(() => {
-  return agent.value?.uf_linkedin || agent.value?.uf_facebook || agent.value?.uf_twitter || agent.value?.uf_skype
+const primaryPhoto = computed(() => firstArrayItem(agent.value?.personal_photo) || firstArrayItem(agent.value?.photo))
+const primaryPosition = computed(() => agent.value?.position || agent.value?.work_position || agent.value?.personal_profession || '')
+const isWebsiteVisible = computed(() => agent.value?.show_on_website === 'Yes' || agent.value?.show_on_website === '1' || agent.value?.show_on_website === true)
+
+const detailSections = computed(() => {
+  if (!agent.value) return []
+  const a = agent.value
+
+  return [
+    {
+      title: 'Identity',
+      fields: [
+        { label: 'Title', value: a.title },
+        { label: 'First Name', value: a.first_name || a.name },
+        { label: 'Second Name', value: a.second_name || a.middle_name },
+        { label: 'Last Name', value: a.last_name },
+        { label: 'Slug', value: a.slug },
+        { label: 'XML ID', value: a.xml_id },
+        { label: 'Agent Type', value: a.agent_type },
+        { label: 'Departments', value: joinList(a.departments) },
+      ],
+    },
+    {
+      title: 'Contact',
+      fields: [
+        { label: 'Email', value: a.email },
+        { label: 'CRM Email', value: a.e_mail },
+        { label: 'Company Email', value: a.company_e_mail },
+        { label: 'Mobile', value: a.personal_mobile },
+        { label: 'Personal Phone', value: a.personal_phone },
+        { label: 'Work Phone', value: a.work_phone },
+        { label: 'Fax', value: a.personal_fax || a.work_fax },
+        { label: 'Inner Phone', value: a.uf_phone_inner },
+      ],
+    },
+    {
+      title: 'Personal',
+      fields: [
+        { label: 'Gender', value: genderLabel(a.personal_gender) },
+        { label: 'Birthday', value: a.personal_birthday, type: 'date' },
+        { label: 'Profession', value: a.personal_profession },
+        { label: 'Website', value: a.personal_www },
+        { label: 'City', value: a.personal_city },
+        { label: 'State', value: a.personal_state },
+        { label: 'Country', value: a.personal_country },
+        { label: 'Street', value: a.personal_street },
+        { label: 'ZIP', value: a.personal_zip },
+        { label: 'Mailbox', value: a.personal_mailbox },
+      ],
+    },
+    {
+      title: 'Work',
+      fields: [
+        { label: 'Position', value: a.position || a.work_position },
+        { label: 'Company', value: a.work_company },
+        { label: 'Department', value: a.work_department },
+        { label: 'Website', value: a.work_www },
+        { label: 'Profile', value: a.work_profile },
+        { label: 'Work City', value: a.work_city },
+        { label: 'Work State', value: a.work_state },
+        { label: 'Work Country', value: a.work_country },
+        { label: 'Work Street', value: a.work_street },
+        { label: 'Work ZIP', value: a.work_zip },
+      ],
+    },
+    {
+      title: 'Website Profile',
+      fields: [
+        { label: 'Show On Website', value: isWebsiteVisible.value ? 'Yes' : 'No' },
+        { label: 'Active', value: a.active ? 'Yes' : 'No' },
+        { label: 'CRE', value: a.cre },
+        { label: 'Specialties', value: a.specialties },
+        { label: 'Service Area Text', value: a.service_area },
+        { label: 'Online', value: a.is_online },
+        { label: 'District', value: a.uf_district },
+        { label: 'Employment Date', value: a.uf_employment_date, type: 'date' },
+        { label: 'Interests', value: a.uf_interests },
+        { label: 'Skills', value: a.uf_skills },
+      ],
+    },
+    {
+      title: 'Social & Links',
+      fields: [
+        { label: 'LinkedIn', value: a.uf_linkedin },
+        { label: 'Facebook', value: a.uf_facebook },
+        { label: 'Twitter', value: a.uf_twitter },
+        { label: 'Skype', value: a.uf_skype },
+        { label: 'Skype Link', value: a.uf_skype_link },
+        { label: 'Zoom', value: a.uf_zoom },
+        { label: 'Web Sites', value: a.uf_web_sites },
+        { label: 'Xing', value: a.uf_xing },
+      ],
+    },
+    {
+      title: 'Certificates & Files',
+      fields: [
+        { label: 'Personal Photo', value: a.personal_photo?.length ? a.personal_photo : a.photo || [] },
+        { label: 'Work Logo', value: a.work_logo || [] },
+        { label: 'Emirates ID', value: a.emirates_id || [] },
+        { label: 'Education Certificate URL', value: a.education_certificate },
+        { label: 'Education Certificate Files', value: a.latest_educational_certificate || [] },
+        { label: 'Abu Dhabi Broker URL', value: a.abu_dhabi_broker_cert },
+        { label: 'Abu Dhabi Broker Files', value: a.abu_dhabi_real_estate_broker_certificate || [] },
+        { label: 'Dubai Broker URL', value: a.dubai_broker_cert },
+        { label: 'Dubai Broker Files', value: a.dubai_real_estate_broker_certificate || [] },
+      ],
+    },
+    {
+      title: 'System',
+      fields: [
+        { label: 'Last Login', value: a.last_login, type: 'date' },
+        { label: 'Registered At', value: a.date_register, type: 'date' },
+        { label: 'Time Zone', value: a.time_zone },
+        { label: 'Created At', value: a.created_at, type: 'date' },
+        { label: 'Updated At', value: a.updated_at, type: 'date' },
+      ],
+    },
+  ]
 })
+
+function isArrayValue(value: unknown): value is unknown[] {
+  return Array.isArray(value)
+}
+
+function firstArrayItem(value: unknown) {
+  return Array.isArray(value) ? String(value[0] || '') : ''
+}
+
+function joinList(value: unknown) {
+  return Array.isArray(value) ? value.filter(Boolean).join(', ') : value
+}
+
+function genderLabel(value: unknown) {
+  if (value === 'M') return 'Male'
+  if (value === 'F') return 'Female'
+  if (value === 'O') return 'Other'
+  return value
+}
+
+function formatValue(value: unknown, type?: string) {
+  if (value === null || value === undefined || value === '') return '-'
+  if (type === 'date') return formatDate(String(value))
+  return String(value)
+}
 
 function formatDate(date: string) {
-  return new Date(date).toLocaleDateString()
+  if (!date) return '-'
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return date
+  return parsed.toLocaleString()
+}
+
+function fileName(value: unknown) {
+  const text = String(value)
+  return text.split('/').filter(Boolean).pop() || text
 }
 
 async function confirmDelete() {

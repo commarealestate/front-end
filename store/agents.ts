@@ -1,95 +1,333 @@
 import { defineStore } from "pinia";
-import type { Agent } from "~/types/agent";
+import type { Agent, PaginatedResponse, ServiceArea } from "~/types/agent";
 import { useNotificationStore } from "./notification";
 
 interface AgentsState {
   agents: Agent[];
   agent: Agent | null;
+  serviceAreas: ServiceArea[];
+  pagination: {
+    currentPage: number;
+    lastPage: number;
+    perPage: number;
+    total: number;
+  } | null;
   loading: boolean;
   error: string | null;
-  serviceAreas: any[];
-  serviceAreasLoading: boolean;
+}
+
+function agentId(agent: Partial<Agent>) {
+  return Number(agent.agent_id ?? agent.id);
+}
+
+function isWebsiteVisible(agent: Agent) {
+  return agent.show_on_website === "Yes" || agent.show_on_website === "1" || agent.show_on_website === true;
+}
+
+function normalizeMediaUrl(value: string) {
+  if (!value) return value;
+
+  const storagePathMarker = "/storage/app/public/";
+  const markerIndex = value.indexOf(storagePathMarker);
+
+  if (markerIndex !== -1) {
+    const publicPath = `/storage/${value.slice(markerIndex + storagePathMarker.length)}`;
+    try {
+      return value.startsWith("http") ? `${new URL(value).origin}${publicPath}` : publicPath;
+    } catch {
+      return publicPath;
+    }
+  }
+
+  if (value.startsWith("storage/app/public/")) {
+    return `/storage/${value.slice("storage/app/public/".length)}`;
+  }
+
+  return value;
+}
+
+function asStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string" && item.length > 0)
+      .map(normalizeMediaUrl);
+  }
+
+  if (typeof value === "string" && value.length > 0) {
+    return [normalizeMediaUrl(value)];
+  }
+
+  return [];
+}
+
+function normalizeAgent(agent: Agent): Agent {
+  const personalPhoto = asStringArray(agent.personal_photo).length
+    ? asStringArray(agent.personal_photo)
+    : asStringArray(agent.photo);
+  const photo = asStringArray(agent.photo).length ? asStringArray(agent.photo) : personalPhoto;
+
+  return {
+    ...agent,
+    personal_photo: personalPhoto,
+    photo,
+    name: agent.name || agent.first_name,
+    first_name: agent.first_name || agent.name || "",
+    email: agent.email || agent.e_mail || null,
+    e_mail: agent.e_mail || agent.email || "",
+  };
+}
+
+function apiErrorFromResponse(response: any) {
+  const message = response?.message || "Request failed";
+  const error = new Error(message) as Error & { validationErrors?: any; response?: any };
+  error.validationErrors = response?.errors;
+  error.response = response;
+  return error;
+}
+
+function apiErrorFromFetchError(error: any, fallbackResponse?: any) {
+  const response = error?.data || error?.response?._data || fallbackResponse;
+  if (response) {
+    return apiErrorFromResponse(response);
+  }
+
+  return error;
 }
 
 export const useAgentsStore = defineStore("agents", {
   state: (): AgentsState => ({
     agents: [],
     agent: null,
+    serviceAreas: [],
+    pagination: null,
     loading: false,
     error: null,
-    serviceAreas: [],
-    serviceAreasLoading: false,
   }),
 
   getters: {
-    // Only agents that should be shown on the website
-    visibleAgents: (state) =>
-      state.agents.filter((agent) => agent.show_on_website === "Yes"),
-    visibleCount: (state) =>
-      state.agents.filter((agent) => agent.show_on_website === "Yes").length,
+    visibleAgents: (state) => state.agents.filter(isWebsiteVisible),
+    visibleCount: (state) => state.agents.filter(isWebsiteVisible).length,
   },
 
   actions: {
-    async fetchAgents() {
+    handleApiResponse(response: any) {
+      if (response?.status === 1) {
+        return response.data;
+      }
+
+      throw apiErrorFromResponse(response);
+    },
+
+    async fetchServiceAreas() {
       this.loading = true;
       this.error = null;
       try {
-        const response = await fetch(
-          "https://myemirateshome.com/im4exr/listings-api/index.php/users",
+        const { data, error } = await useApiFetch(
+          {
+            apiType: "common",
+            url: "service/area",
+            method: "GET",
+          },
+          {
+            query: { per_page: 100 },
+          },
         );
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        // The API returns { data: [...], meta: {...} }
-        this.agents = data.data || [];
-        return this.agents;
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value);
+        const result = this.handleApiResponse(data.value);
+        this.serviceAreas = result || [];
+        return this.serviceAreas;
       } catch (err: any) {
         this.error = err.message;
-        const notification = useNotificationStore();
-        notification.error("Error", err.message);
+        useNotificationStore().error("Error", err.message);
         throw err;
       } finally {
         this.loading = false;
       }
     },
 
-    async fetchAgent(id: number) {
-      // First ensure agents are loaded
-      if (this.agents.length === 0) {
-        await this.fetchAgents();
-      }
-      const found = this.agents.find((a) => Number(a.id) === id);
-      if (found && found.show_on_website === "Yes") {
-        this.agent = found;
-        return this.agent;
-      } else {
-        this.agent = null;
-        throw new Error("Agent not found or not visible");
+    async fetchAgents(params?: Record<string, any>) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { data, error } = await useApiFetch(
+          {
+            apiType: "common",
+            url: "agents",
+            method: "GET",
+          },
+          {
+            query: params,
+          },
+        );
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value);
+
+        const result = data.value as PaginatedResponse<Agent>;
+        this.agents = (result.data || []).map(normalizeAgent);
+        this.pagination = result.meta
+          ? {
+              currentPage: result.meta.current_page,
+              lastPage: result.meta.last_page,
+              perPage: result.meta.per_page,
+              total: result.meta.total,
+            }
+          : null;
+        return result;
+      } catch (err: any) {
+        this.error = err.message;
+        useNotificationStore().error("Error", err.message);
+        throw err;
+      } finally {
+        this.loading = false;
       }
     },
 
-    async fetchServiceAreas() {
-      this.serviceAreasLoading = true;
+    async fetchAgent(id: number | string) {
+      this.loading = true;
+      this.error = null;
       try {
-        // This might be a separate endpoint; adapt as needed
-        // For now, we extract unique service areas from agents
-        const areasMap = new Map();
-        this.agents.forEach((agent) => {
-          if (agent.service_areas && Array.isArray(agent.service_areas)) {
-            agent.service_areas.forEach((area: any) => {
-              if (!areasMap.has(area.service_area_id)) {
-                areasMap.set(area.service_area_id, area);
-              }
-            });
-          }
+        const { data, error } = await useApiFetch({
+          apiType: "common",
+          url: `agents/${id}`,
+          method: "GET",
         });
-        this.serviceAreas = Array.from(areasMap.values());
-        return this.serviceAreas;
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value);
+        const result = this.handleApiResponse(data.value);
+        this.agent = normalizeAgent(result);
+        return this.agent;
       } catch (err: any) {
         this.error = err.message;
+        useNotificationStore().error("Error", err.message);
         throw err;
       } finally {
-        this.serviceAreasLoading = false;
+        this.loading = false;
+      }
+    },
+
+    async createAgent(formData: FormData) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { data, error } = await useApiFetch(
+          {
+            apiType: "admin",
+            url: "agents",
+            method: "POST",
+          },
+          {
+            body: formData,
+          },
+        );
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value);
+        const result = this.handleApiResponse(data.value);
+        useNotificationStore().success("Success", "Agent created successfully");
+        return result;
+      } catch (err: any) {
+        this.error = err.message;
+        useNotificationStore().error("Error", err.message);
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async updateAgent(id: number | string, formData: FormData) {
+      this.loading = true;
+      this.error = null;
+      try {
+        if (!formData.has("_method")) {
+          formData.append("_method", "patch");
+        }
+        const { data, error } = await useApiFetch(
+          {
+            apiType: "admin",
+            url: `agents/${id}`,
+            method: "POST",
+          },
+          {
+            body: formData,
+          },
+        );
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value);
+        const result = this.handleApiResponse(data.value);
+        useNotificationStore().success("Success", "Agent updated successfully");
+        return result;
+      } catch (err: any) {
+        this.error = err.message;
+        useNotificationStore().error("Error", err.message);
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async toggleActive(id: number | string, active: boolean) {
+      const formData = new FormData();
+      formData.append("active", active ? "1" : "0");
+      formData.append("_method", "patch");
+      try {
+        const { data, error } = await useApiFetch(
+          {
+            apiType: "admin",
+            url: `agents/${id}`,
+            method: "POST",
+          },
+          {
+            body: formData,
+          },
+        );
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value);
+        const result = this.handleApiResponse(data.value);
+        const index = this.agents.findIndex((agent) => agentId(agent) === Number(id));
+        if (index !== -1) {
+          this.agents[index].active = active;
+        }
+        useNotificationStore().success("Status Updated", `Agent ${active ? "activated" : "deactivated"}`);
+        return result;
+      } catch (err: any) {
+        useNotificationStore().error("Error", err.message);
+        throw err;
+      }
+    },
+
+    async deleteAgent(id: number | string) {
+      try {
+        const { data, error } = await useApiFetch({
+          apiType: "admin",
+          url: `agents/${id}`,
+          method: "DELETE",
+        });
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value);
+        const result = this.handleApiResponse(data.value);
+        this.agents = this.agents.filter((agent) => agentId(agent) !== Number(id));
+        useNotificationStore().success("Deleted", "Agent deleted successfully");
+        return result;
+      } catch (err: any) {
+        useNotificationStore().error("Error", err.message);
+        throw err;
+      }
+    },
+
+    async removeServiceArea(agentIdValue: number | string, serviceAreaId: number | string) {
+      const formData = new FormData();
+      formData.append("service_area_id", String(serviceAreaId));
+      try {
+        const { data, error } = await useApiFetch(
+          {
+            apiType: "admin",
+            url: `agents/${agentIdValue}/service-area`,
+            method: "POST",
+          },
+          {
+            body: formData,
+          },
+        );
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value);
+        const result = this.handleApiResponse(data.value);
+        useNotificationStore().success("Removed", "Service area removed from agent");
+        return result;
+      } catch (err: any) {
+        useNotificationStore().error("Error", err.message);
+        throw err;
       }
     },
   },
