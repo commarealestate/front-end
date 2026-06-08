@@ -440,8 +440,8 @@
 
           <!-- Right Sidebar (Contact & Agent) -->
           <aside class="lg:col-span-1 space-y-6">
-            <div class="bg-white rounded-2xl shadow-luxury border border-comma-border-subtle p-6 sticky top-24">
-              <h3 class="text-2xl font-bold text-comma-neutral-900 mb-6 font-display">{{
+            <div class="bg-white rounded-2xl shadow-luxury border border-comma-border-subtle p-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+              <h3 class="text-xl font-bold text-comma-neutral-900 mb-5 font-display">{{
                 $t('property_page.contact_agent') }}</h3>
 
               <!-- Agent Info (dynamic) -->
@@ -474,14 +474,14 @@
               </div>
 
               <!-- Contact Methods -->
-              <div class="space-y-3">
+              <div class="space-y-2.5">
                 <a :href="`tel:${defaultPhone}`"
                   class="flex items-center gap-3 p-3 rounded-xl border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition group">
                   <div
                     class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary/20 transition">
                     <Icon name="mdi:phone" class="w-5 h-5 text-comma-primary" />
                   </div>
-                  <div>
+                  <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.call') }}</div>
                     <div class="font-medium text-comma-neutral-900"><span dir="ltr">{{ defaultPhone }}</span></div>
                   </div>
@@ -492,9 +492,9 @@
                     class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary/20 transition">
                     <Icon name="mdi:email" class="w-5 h-5 text-comma-primary" />
                   </div>
-                  <div>
+                  <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.email') }}</div>
-                    <div class="font-medium text-comma-neutral-900">{{ contactEmail }}</div>
+                    <div class="truncate font-medium text-comma-neutral-900">{{ contactEmail }}</div>
                   </div>
                 </a>
                 <a :href="`https://wa.me/${defaultWhatsapp}`" target="_blank"
@@ -503,7 +503,7 @@
                     class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary/20 transition">
                     <Icon name="mdi:whatsapp" class="w-5 h-5 text-comma-primary" />
                   </div>
-                  <div>
+                  <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.whatsapp') }}</div>
                     <div class="font-medium text-comma-neutral-900"><span dir="ltr">+{{ defaultWhatsapp }}</span></div>
                   </div>
@@ -511,34 +511,34 @@
               </div>
 
               <!-- Lead Form -->
-              <form class="mt-6 space-y-3 border-t border-comma-border-subtle pt-6" @submit.prevent="submitPropertyLead">
+              <form class="mt-5 space-y-3 border-t border-comma-border-subtle pt-5" @submit.prevent="submitPropertyLead">
                 <div>
                   <label class="mb-1 block text-sm font-medium text-comma-neutral-800">
                     {{ $t('contact_page.form_name') || 'Name' }} *
                   </label>
                   <input v-model="leadForm.name" type="text" required
-                    class="w-full rounded-xl border border-comma-border-subtle px-4 py-3 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20" />
+                    class="w-full rounded-xl border border-comma-border-subtle px-4 py-2.5 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20" />
                 </div>
                 <div>
                   <label class="mb-1 block text-sm font-medium text-comma-neutral-800">
                     {{ $t('contact_page.form_phone') || 'Phone' }} *
                   </label>
                   <input v-model="leadForm.phone" type="tel" required
-                    class="w-full rounded-xl border border-comma-border-subtle px-4 py-3 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20" />
+                    class="w-full rounded-xl border border-comma-border-subtle px-4 py-2.5 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20" />
                 </div>
                 <div>
                   <label class="mb-1 block text-sm font-medium text-comma-neutral-800">
                     {{ $t('contact_page.form_email') || 'Email' }} *
                   </label>
                   <input v-model="leadForm.email" type="email" required
-                    class="w-full rounded-xl border border-comma-border-subtle px-4 py-3 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20" />
+                    class="w-full rounded-xl border border-comma-border-subtle px-4 py-2.5 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20" />
                 </div>
                 <div>
                   <label class="mb-1 block text-sm font-medium text-comma-neutral-800">
                     {{ $t('contact_page.form_message') || 'Message' }}
                   </label>
-                  <textarea v-model="leadForm.message" rows="3"
-                    class="w-full resize-none rounded-xl border border-comma-border-subtle px-4 py-3 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20"></textarea>
+                  <textarea v-model="leadForm.message" rows="2"
+                    class="w-full resize-none rounded-xl border border-comma-border-subtle px-4 py-2.5 outline-none transition focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20"></textarea>
                 </div>
                 <button type="submit" :disabled="leadSubmitting"
                   class="flex w-full items-center justify-center gap-2 rounded-xl bg-comma-primary px-5 py-3 font-semibold text-white transition hover:bg-comma-primary-dark disabled:cursor-not-allowed disabled:opacity-70">
@@ -555,11 +555,15 @@
 
               <!-- Share Button -->
               <div class="mt-6 pt-6 border-t border-comma-border-subtle">
-                <button @click="copyLink"
-                  class="w-full py-3 bg-comma-neutral-100 hover:bg-comma-primary/10 text-comma-neutral-700 font-semibold rounded-xl transition flex items-center justify-center gap-2">
-                  <Icon name="mdi:share-variant" class="w-5 h-5" />
-                  {{ $t('property_page.share') }}
+                <button type="button" @click="shareProperty"
+                  class="w-full py-3 bg-comma-neutral-100 hover:bg-comma-primary/10 text-comma-neutral-700 font-semibold rounded-xl transition flex items-center justify-center gap-2"
+                  :class="{ 'bg-green-50 text-green-700 hover:bg-green-50': shareState === 'copied' }">
+                  <Icon :name="shareState === 'copied' ? 'mdi:check' : 'mdi:share-variant'" class="w-5 h-5" />
+                  {{ shareButtonLabel }}
                 </button>
+                <p v-if="shareState === 'error'" class="mt-2 text-center text-xs font-medium text-red-600">
+                  {{ shareErrorLabel }}
+                </p>
               </div>
             </div>
           </aside>
@@ -642,6 +646,8 @@ const lightboxOpen = ref(false)
 const leadSubmitting = ref(false)
 const leadSuccessMessage = ref('')
 const leadErrorMessage = ref('')
+const shareState = ref<'idle' | 'copied' | 'error'>('idle')
+let shareResetTimer: ReturnType<typeof setTimeout> | null = null
 const leadForm = reactive({
   name: '',
   phone: '',
@@ -708,6 +714,18 @@ const propertyTitle = computed(() => {
 const propertyDescription = computed(() => {
   if (!property.value) return ''
   return locale.value === 'ar' ? property.value.descriptionArabic : property.value.descriptionEnglish
+})
+
+const shareButtonLabel = computed(() => {
+  if (shareState.value === 'copied') {
+    return locale.value === 'ar' ? 'تم نسخ الرابط' : 'Link copied'
+  }
+
+  return t('property_page.share') || (locale.value === 'ar' ? 'مشاركة العقار' : 'Share Property')
+})
+
+const shareErrorLabel = computed(() => {
+  return locale.value === 'ar' ? 'تعذر مشاركة الرابط' : 'Could not share the link'
 })
 
 const propertySize = computed(() => {
@@ -916,13 +934,49 @@ function openFloorPlan(plan: string) {
   }
 }
 
-// Copy link to clipboard
-async function copyLink() {
+function setShareState(state: 'idle' | 'copied' | 'error') {
+  shareState.value = state
+
+  if (shareResetTimer) {
+    clearTimeout(shareResetTimer)
+  }
+
+  if (state !== 'idle') {
+    shareResetTimer = setTimeout(() => {
+      shareState.value = 'idle'
+      shareResetTimer = null
+    }, 2200)
+  }
+}
+
+async function shareProperty() {
+  if (!process.client) return
+
+  const url = window.location.href
+  const title = propertyTitle.value || (locale.value === 'ar' ? 'عقار من كوما' : 'Comma Property')
+
   try {
-    await navigator.clipboard.writeText(window.location.href)
-    alert(t('property_page.link_copied') || 'Link copied to clipboard!')
+    if (navigator.share) {
+      await navigator.share({
+        title,
+        text: title,
+        url,
+      })
+      return
+    }
+
+    await navigator.clipboard.writeText(url)
+    setShareState('copied')
   } catch (err) {
-    console.error('Failed to copy:', err)
+    if ((err as Error)?.name === 'AbortError') return
+
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareState('copied')
+    } catch {
+      console.error('Failed to share:', err)
+      setShareState('error')
+    }
   }
 }
 
