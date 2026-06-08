@@ -95,6 +95,43 @@
                                     1200x800)</p>
                             </div>
                         </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-comma-neutral-800 mb-1">Project Gallery</label>
+                            <div class="border-2 border-dashed border-comma-border-subtle rounded-xl p-6 hover:border-comma-primary transition">
+                                <input
+                                    type="file"
+                                    ref="galleryInput"
+                                    @change="handleGalleryUpload"
+                                    accept="image/*"
+                                    multiple
+                                    class="hidden"
+                                />
+                                <div class="flex flex-col gap-4">
+                                    <div v-if="galleryPreviews.length" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                                        <div v-for="(preview, index) in galleryPreviews" :key="preview" class="relative aspect-square overflow-hidden rounded-lg bg-comma-surface-subtle">
+                                            <img :src="preview" class="h-full w-full object-cover" />
+                                            <button
+                                                type="button"
+                                                class="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+                                                @click="removeGalleryImage(index)"
+                                                aria-label="Remove gallery image"
+                                            >
+                                                <Icon name="mdi:close" class="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="inline-flex w-fit items-center gap-2 rounded-lg border border-comma-border-subtle px-4 py-2 text-sm font-medium text-comma-neutral-700 transition hover:border-comma-primary hover:text-comma-primary"
+                                        @click="triggerGalleryUpload"
+                                    >
+                                        <Icon name="mdi:image-plus" class="h-5 w-5" />
+                                        Add gallery images
+                                    </button>
+                                    <p class="text-sm text-comma-neutral-500">Upload up to 5 gallery images for the project landing page.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -123,7 +160,9 @@ import { useProjectsStore } from '~/store/projects'
 const store = useProjectsStore()
 const submitting = ref(false)
 const coverInput = ref<HTMLInputElement | null>(null)
+const galleryInput = ref<HTMLInputElement | null>(null)
 const coverPreview = ref('')
+const galleryPreviews = ref<string[]>([])
 
 const form = reactive({
     title_en: '',
@@ -134,6 +173,7 @@ const form = reactive({
     description_en: '',
     description_ar: '',
     cover_image: null as File | null,
+    gallery: [] as File[],
 })
 
 function triggerCoverUpload() {
@@ -146,6 +186,34 @@ function handleCoverUpload(e: Event) {
         form.cover_image = target.files[0]
         coverPreview.value = URL.createObjectURL(target.files[0])
     }
+}
+
+function triggerGalleryUpload() {
+    galleryInput.value?.click()
+}
+
+function handleGalleryUpload(e: Event) {
+    const target = e.target as HTMLInputElement
+    const files = Array.from(target.files || [])
+    if (!files.length) return
+
+    const remainingSlots = Math.max(0, 5 - form.gallery.length)
+    const acceptedFiles = files.slice(0, remainingSlots)
+
+    form.gallery.push(...acceptedFiles)
+    galleryPreviews.value.push(...acceptedFiles.map((file) => URL.createObjectURL(file)))
+
+    if (target) {
+        target.value = ''
+    }
+}
+
+function removeGalleryImage(index: number) {
+    const [preview] = galleryPreviews.value.splice(index, 1)
+    if (preview) {
+        URL.revokeObjectURL(preview)
+    }
+    form.gallery.splice(index, 1)
 }
 
 async function submitForm() {
@@ -165,6 +233,9 @@ async function submitForm() {
         if (form.description_en) fd.append('description_en', form.description_en)
         if (form.description_ar) fd.append('description_ar', form.description_ar)
         if (form.cover_image) fd.append('cover_image', form.cover_image)
+        form.gallery.forEach((file, index) => {
+            fd.append(`gallery[${index}][image]`, file)
+        })
 
         await store.createProject(fd)
         await navigateTo('/admin/projects')

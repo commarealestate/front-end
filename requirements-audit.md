@@ -1,475 +1,489 @@
-# Comma Real Estate - Requirements Audit
+# CRM & Website Requirements Tracker
 
-تاريخ المراجعة: 2026-06-03
+Review date: 2026-06-08
 
-## الملفات التي تمت مراجعتها
-
+Source document:
 - `CRM & Website Issues + New Feature Request.pdf`
-- `Single Property Page - Resale.pdf`
-- `Single Property Page - Rental.pdf`
-- `Single Property Page - OffPlan.pdf`
-- `Agent Profile - Full Attributes Structure.pdf`
-- `Agent Profile - Full Attributes Structure (1).pdf`
 
-ملاحظة: ملفا `Agent Profile - Full Attributes Structure` لهما نفس المحتوى.
+This file is the English source of truth for the CRM and website requirements. It tracks what the client asked for, the expected behavior, and the current implementation status.
 
-## ملخص تنفيذي
+## Status Legend
 
-المشروع الحالي يحتوي على أساس جيد لصفحات العقارات والوكلاء والمشاريع، لكنه لا يطابق كامل المتطلبات في المستندات. أهم الفجوات:
+- `Done`: implemented and verified at code level.
+- `Needs verification`: implemented or mostly implemented, but still needs one manual/browser/API verification pass.
+- `In progress`: implementation exists but is incomplete.
+- `Open`: not implemented yet.
 
-- صفحة العقار تعرض بيانات عامة فقط ولا تفصل الحقول حسب `Resale / Rental / Off-plan`.
-- لا يوجد Contact Form فعلي داخل صفحة العقار، الموجود روابط اتصال فقط.
-- منطق الامتثال `ADGM / Guaranteed Badge / QR Code` ومعالجة الصور غير موجود.
-- لوحة تحكم العقارات لا تحتوي أغلب الحقول المطلوبة في مستندات العقارات.
-- الوكلاء لديهم مشكلة بنيوية في مصدر البيانات والحقول؛ الواجهة تعتمد على API خارجي مباشر في `store/agents.ts` بدلاً من `useApiFetch` ومسارات admin، كما أن CRUD غير موجود في الملف الفعلي.
-- Projects module موجود، لكن ليس كـ Lead Generation Landing Page كما هو مطلوب؛ لا يوجد نموذج visible-first ولا ربط lead بالمشروع.
-- Homepage لا يعرض Projects مباشرة بعد Hero كما هو مطلوب.
-- يوجد خطر TypeScript واضح: `NormalizedProperty` مستخدم في عدة ملفات، لكنه غير مصدّر من `types/property.ts` حسب الملف الحالي.
+## Section 1: Existing Issues
 
-## مقارنة المتطلبات مع الكود الحالي
+### 1. Employee Creation Issue
 
-### 1. مشاكل CRM والويب الحالية
+Status: `Done`
 
-#### Employee Creation Issue
+Requirement:
+- The system must not hang when adding a new employee/agent.
+- The UI must show a clear error message when creation fails.
+- Validation errors must be visible to the admin.
 
-المتطلب:
-- إصلاح تعليق النظام عند إضافة موظف.
-- إظهار رسائل خطأ واضحة.
-- معالجة أخطاء API والـvalidation.
+Likely causes from the requirement:
+- API not returning a proper response.
+- Database constraint, such as duplicate email.
+- Missing required fields.
+- Frontend not handling errors properly.
 
-الوضع الحالي:
-- لم أجد module واضح باسم employees.
-- أقرب module هو agents/admin users، و`store/agents.ts` الحالي لا يحتوي `createAgent` أو `updateAgent` رغم أن `components/admin/agents/form.vue` يستدعيهما.
+Current implementation notes:
+- The agent create path uses backend/admin API.
+- Frontend submit state is reset in `finally`, so the form should not stay stuck in loading.
+- API errors are parsed and displayed as toast, general form errors, and field-level validation errors.
+- Backend request validation exists for agent creation.
+- Duplicate agent email validation now uses the real backend `e_mail` column, so duplicate email failures return a validation error instead of a database/runtime failure.
 
-المطلوب:
-- تحديد endpoint الموظفين/الوكلاء المعتمد.
-- توحيد store مع API admin.
-- إرجاع وعرض رسائل validation من الباكند.
-- منع duplicate email برسالة واضحة.
+Verification:
+- Frontend build passed.
+- Backend request/controller syntax checks passed.
+- Duplicate email validation is enforced in create and update requests.
 
-#### Property Images Not Displaying In Control Panel
+Acceptance criteria:
+- Creating a valid employee/agent succeeds and redirects back to the list.
+- Invalid submission returns a clear message without hanging.
+- Duplicate email, if blocked by business rules, returns a field-level email error.
 
-المتطلب:
-- صور العقارات يجب أن تظهر في لوحة التحكم.
+### 2. Property Images Not Displaying In Control Panel
 
-الوضع الحالي:
-- `components/admin/properties/form.vue` يعرض `p.images`.
-- صفحات العرض العامة تعتمد على `cover_image` و`property_photos`.
-- يوجد عدم اتساق بين `images`, `property_photos`, `cover_image`.
+Status: `Done`
 
-المطلوب:
-- توحيد أسماء الحقول في الـmapper.
-- في لوحة التحكم استخدم الحقول المعتمدة من API: `cover_image`, `property_photos`, `floor_plan`.
-- دعم preview وحذف ورفع صور منفصلة للـcover/gallery/floor plans.
+Requirement:
+- Property images must be visible in the admin/control panel property list and grid.
 
-#### Agent Profile Issues
+Likely causes from the requirement:
+- Incorrect image URLs.
+- Images not uploaded or not saved properly.
+- Storage or permissions issue.
+- API not returning image paths.
+- Mapping issue between backend and frontend.
 
-المتطلب:
-- عرض الاسم الكامل.
-- status ليس Active فقط.
-- كل الحقول يجب أن تحفظ عند التحديث، وليس فقط profession/city.
-- الصورة يجب أن ترفع وتتحدث وتعود كـURL.
+Current implementation notes:
+- Admin property list/grid image mapping has been fixed.
+- Property cards now display the expected image source.
 
-الوضع الحالي:
-- `store/agents.ts` يقرأ من `https://myemirateshome.com/.../users` مباشرة.
-- `components/admin/agents/form.vue` يستدعي `createAgent` و`updateAgent` لكنها غير موجودة في `store/agents.ts`.
-- `Agent` type يحتوي حقول كثيرة، لكن لا يطابق وثيقة API النهائية بشكل نظيف.
+Acceptance criteria:
+- Admin property grid cards show the correct property image.
+- Admin property list/grid uses the same normalized image mapping as public property cards where applicable.
 
-المطلوب:
-- بناء `agents` store كامل عبر `useApiFetch`:
-  - `GET /agents`
-  - `GET /agents/:id`
-  - `POST /agents`
-  - `PATCH /agents/:id`
-  - `DELETE /agents/:id` إن كان مطلوباً
-- إرسال كل الحقول المطلوبة في FormData.
-- توحيد mapping:
-  - `first_name`
-  - `last_name`
-  - `full_name` محسوب للعرض
-  - `photo` أو `profile_image`
-  - `position`
-  - `departments`
-  - `cre`
-  - `joining_date`
-  - `about`
-  - `years_of_experience`
-  - `properties_count`
-  - `mobile`
-  - `working_email`
-  - `specialities`
-  - `services`
-  - `latest_educational_certificate_file`
-  - `show_on_website`
-  - `Broker_License_Dubai`
-  - `Broker_License_Abu_Dhabi`
-  - `hobbies`
+### 3. Agent Profile Issues
 
-#### Missing Dates / Activity Tracking
+Status: `Done`
 
-المتطلب:
-- عرض created date, first contact date, last activity, last update.
-- timeline: Lead Created, WhatsApp Sent, Call Made, Meeting Scheduled.
+Requirement:
+- Full name must display, not only last name.
+- Status must reflect real active/inactive state, not always active.
+- Updating an agent must persist all edited fields.
+- After refresh, data must not revert.
+- Profile image must save and display correctly.
 
-الوضع الحالي:
-- بعض types تحتوي `created_at` و`updated_at`.
-- لا يوجد activity timeline أو lead activity model.
+Fields specifically reported as broken:
+- Full name.
+- Image.
+- Other agent fields beyond profession and city.
 
-المطلوب:
-- إضافة API/Schema للـactivities:
-  - `id`
-  - `entity_type`: lead/property/project/agent
-  - `entity_id`
-  - `activity_type`
-  - `occurred_at`
-  - `notes`
-  - `created_by`
-- عرض timeline في CRM ولوحات التفاصيل ذات العلاقة.
+Current implementation notes:
+- Agent store now supports admin CRUD through the backend API.
+- Agent full name uses first name, second name/middle name, and last name.
+- Image handling supports personal photo and normalized photo fallback.
+- Agent form sends all mapped fields through `FormData`.
+- Status is mapped through the `active` field.
+- Agent ordering and website hierarchy fields were added.
+- Work position/job title is displayed in the admin card/list and detail context.
 
-#### Website Filter Issue - Apartments Not Showing
+Verification:
+- Frontend build passed.
+- Agent store and form submit all mapped fields through backend API.
+- Backend create/update request validation and resource mapping are in place for profile fields, image fields, status, level, and display order.
 
-المتطلب:
-- Apartments يجب أن تظهر في الموقع مثل باقي الأنواع.
+Acceptance criteria:
+- Agent profile shows full name everywhere.
+- Active/inactive status is accurate.
+- Every editable field saved by the form persists after refresh.
+- Uploaded profile image remains linked to the agent record.
 
-الوضع الحالي:
-- الفلتر يرسل `property_type=apartment`.
-- مستندات/أمثلة API تستخدم قيم مثل `Villa`، وقد تكون المشكلة case/value mismatch مثل `Apartment` مقابل `apartment`.
+### 4. Missing Dates / Activity Tracking
 
-المطلوب:
-- توحيد قيم property type بين لوحة التحكم والباكند والويب.
-- اعتماد normalization على الواجهة أو دعم case-insensitive في API.
-- اختبار القيم:
-  - `Apartment`
-  - `apartment`
-  - `Apartments`
-- التأكد أن `inventory_status=Live` و`show_on_website` لا يحجبان الشقق.
+Status: `Open`
 
-#### Agent Page Structure - Levels & Sorting
+Requirement:
+- Admin must have visibility for:
+  - Created date.
+  - First contact date.
+  - Last activity.
+  - Last update.
+- CRM must support a full activity timeline:
+  - Lead Created.
+  - WhatsApp Sent.
+  - Call Made.
+  - Meeting Scheduled.
 
-المتطلب:
-- Level 1: Higher Management
-- Level 2: Management
-- Level 3: Agents
-- Sorting by CRE ID ASC أو Joining Date ASC.
+Impact from the requirement:
+- Without this, there is no performance tracking.
+- No accountability.
+- No way to measure response time or follow-ups.
 
-الوضع الحالي:
-- صفحة agents ترتب حسب priority/name/recent.
-- لا يوجد level hierarchy واضح.
+Current implementation notes:
+- Agents already expose `created_at` and `updated_at`.
+- Agents already have some legacy/imported date fields such as `date_register`, `last_login`, and `last_activity_date`.
+- There is no clean CRM activity timeline model yet.
+- There are no dedicated `first_contact_at` or `last_activity_at` fields for agent/lead tracking yet.
 
-المطلوب:
-- إضافة `level` أو `department_level`.
-- عرض الوكلاء في ثلاث مجموعات.
-- ترتيب داخل كل مجموعة:
-  - `cre` تصاعدياً إذا موجود وصالح.
-  - وإلا `joining_date` تصاعدياً.
+Planned backend fields:
+- `first_contact_at` nullable timestamp.
+- `last_activity_at` nullable timestamp.
 
-## 2. صفحة العقار - Resale / Rental / Off-plan
+Planned activity timeline model:
+- `id`
+- `entity_type`: lead, contact, project, property, agent.
+- `entity_id`
+- `activity_type`: lead_created, whatsapp_sent, call_made, meeting_scheduled, note, status_change.
+- `occurred_at`
+- `notes`
+- `created_by`
+- `created_at`
+- `updated_at`
 
-### الموجود حالياً
+Acceptance criteria:
+- Agent/admin detail shows Created Date, First Contact Date, Last Activity, and Last Update.
+- Lead/contact detail shows a chronological activity timeline.
+- Project and property leads can be tracked back to source and follow-up activity.
+- Timeline supports at least Lead Created, WhatsApp Sent, Call Made, and Meeting Scheduled.
 
-صفحة التفاصيل `pages/properties/[id]-[slug].vue` تعرض:
+### 5. Website Filter Issue: Apartments Not Showing
 
-- Hero image/title/reference.
-- price, bedrooms, bathrooms, size, parking, build year.
-- gallery من `coverImage` و`propertyPhotos`.
-- description.
-- address: location, city, community, project.
-- details عامة مثل developer, offering type, project status, available from, payment method, service charge, down payment, furnished, finishing type.
-- amenities.
-- installments.
-- views.
-- agent contact links.
+Status: `Done`
 
-### الفجوات العامة لكل الأنواع
+Requirement:
+- Apartments must show on the website when filtering by apartment type.
+- Admin categorization and public filtering must use compatible values.
 
-المطلوب لكل صفحة عقار:
+Likely causes from the requirement:
+- API not returning apartment data.
+- Value mismatch, such as `apartment` vs `Apartment` vs `Apartments`.
+- Field mismatch, such as `property_type` vs `type`.
+- Frontend filter logic issue.
+- `Show on Website` flag not applied correctly.
 
-- عرض attributes حسب نوع العقار فقط:
-  - Resale
-  - Rental
-  - Off-plan
-- بدون hardcoding، مع schema/config ديناميكي.
-- Contact Form linked to Listing Agent.
-- Compliance section conditional.
-- Floor plans منفصلة عن gallery.
-- حفظ original images ومعالجة processed images عند approval.
+Current implementation notes:
+- Frontend property type normalization includes apartment variants.
+- Backend property filtering now performs case/plural-tolerant matching for apartment/apartments, villa/villas, and townhouse/townhouses.
 
-الوضع الحالي:
-- لا يوجد تفريع واضح حسب نوع listing.
-- لا يوجد form submission.
-- floor plans غير معروضة كقسم مستقل.
-- compliance غير معروض ولا مطبق.
-- لا يوجد status workflow: `Preparation` -> `Approved`.
+Verification:
+- Frontend build passed.
+- Backend syntax checks passed.
+- Backend filter no longer depends on exact stored casing for apartment values.
 
-### Resale Requirements
+Acceptance criteria:
+- Selecting Apartments on the public site shows apartment listings.
+- Filter works regardless of stored value casing if legacy data has mixed values.
+- Villas and apartments use the same API/filter contract.
 
-الحقول المطلوبة:
+### 6. Agent Page Structure: Levels And Sorting
 
-- Basic: title, price, bedrooms, bathrooms, total size, view.
-- Description rich text.
-- Address: location, city, community, project.
-- Media: cover image, gallery images, floor plans.
-- Details: reference number, total/internal/external size, project start year, handover date, project status.
-- Developer optional: name, brief.
-- Payment: Cash, Cash/Mortgage.
-- Amenities open list.
-- Agent details.
+Status: `Done`
+
+Requirement:
+- Agent page must be grouped into:
+  - Level 1: Higher Management.
+  - Level 2: Management.
+  - Level 3: Agents.
+- Sorting logic:
+  - Sort by CRE ID ascending if reliable.
+  - Otherwise sort by joining date ascending.
+- Admin must be able to control relative importance/order for website display.
+
+Current implementation notes:
+- Agent hierarchy fields exist.
+- Display order support exists.
+- Website groups agents by level.
+- Sorting uses display priority, CRE, and date fallback behavior.
+- Backend and frontend both support `website_level` and `display_order`.
+
+Verification:
+- Frontend build passed.
+- Backend request/resource/controller syntax checks passed.
+
+Acceptance criteria:
+- Public agents page shows three hierarchy groups.
+- Admin can assign agent level.
+- Admin can set display order/importance.
+- Agents render in the expected priority order.
+
+## Section 2: Attached Documents - Property Attributes
+
+Status: `In progress`
+
+Documents referenced:
+- Resale Attributes.
+- Off-plan Attributes.
+- Rental Attributes.
+
+Requirement:
+- Build pages based on these documents.
+- Each property type must display only its relevant attributes.
+- No hardcoding.
+- Attributes must be fully dynamic from the control panel.
+
+Required behavior:
+- Resale properties display only resale-relevant fields.
+- Rental properties display only rental-relevant fields.
+- Off-plan properties display only off-plan-relevant fields.
+- Admin/control panel controls the available attributes and values.
+- Website reads from the API/attribute schema instead of hardcoded page sections.
+
+Current implementation notes:
+- Property detail page displays many type-specific fields.
+- This is not yet a fully dynamic control-panel-driven attribute system.
+
+Remaining work:
+- Define backend attribute schema/config per property listing type.
+- Add admin controls for attributes.
+- Return attribute groups from API.
+- Render property attributes dynamically on the website.
+
+Acceptance criteria:
+- Adding/removing/reordering an attribute in the control panel changes website display without code changes.
+- Resale, rental, and off-plan pages only show their relevant fields.
+- No frontend hardcoded field list is required for the final dynamic version.
+
+## Section 3: Projects + Contact Forms
+
+### 1. Objective
+
+Status: `In progress`
+
+Requirement:
+- Introduce a module called `Projects` in:
+  - Website.
+  - Control Panel.
+
+Purpose:
+- This is not a blog module.
+- Each project is a landing page and lead capture system.
+
+### 2. Project Concept
+
+Status: `In progress`
+
+Each project must have:
+- Dedicated page.
+- Images.
+- Description.
+- Project details.
 - Contact form.
-- Compliance conditional.
 
-المطلوب في الكود:
+### 3. Control Panel Requirements
 
-- إضافة/تأكيد الحقول في `types/property.ts` والـnormalized mapper.
-- عرض Resale فقط عندما `sale_type` أو `offering_type` يحدد sale/resale.
-- إضافة `payment_plan_type` أو الاعتماد على `payment_method` إذا كان API معتمداً.
+Status: `In progress`
 
-### Rental Requirements
+Admin must be able to:
+- Create a new project.
+- Upload 4 to 5 images.
+- Add title.
+- Add blog-style/rich description content.
+- Set status:
+  - Published.
+  - Draft.
 
-الحقول المطلوبة:
+Current implementation notes:
+- Admin project CRUD exists.
+- Project status support exists in frontend and backend.
+- Image/gallery support exists.
+- Project creation now supports uploading up to 5 gallery images with previews and removal before save.
 
-- Rent price.
-- Billing cycle: Yearly/Monthly.
-- Number of cheques.
-- Furnishing.
-- Availability: Vacant/Rented/Available From.
-- Contract duration: 6/12 months.
-- Security deposit.
-- Chiller included/not included.
-- Min/max contract duration.
-- Renewal terms.
-- Notice period.
-- Rental amenities مثل maintenance included وconcierge.
+Remaining work:
+- Verify rich description editing quality.
+- Decide whether the description field must be upgraded from plain textarea to a true rich text/blog-style editor.
 
-الموجود جزئياً:
-- `rental_period`, `furnished`, `available_from`, `no_of_cheques`, `security_deposit`, `minimum_contract_duration`, `maximum_contract_duration`, `renewal_terms`, `notice_period`, `ac_type`.
+### 4. Website Homepage Integration
 
-المطلوب:
-- استكمال عرض هذه الحقول في Rental layout.
-- إضافة `billing_cycle`, `chiller`, `contract_duration`, `availability_status` إذا لم تكن موجودة في API.
-- فصل قسم Payment & Lease.
+Status: `Done`
 
-### Off-plan Requirements
+Requirement:
+- Add a `Projects` section directly below the homepage hero section.
 
-الحقول المطلوبة:
+Display:
+- Project image.
+- Project name.
+- Short description.
 
-- Cover image required.
-- Floor plans required.
-- Developer required.
-- Down payment percentage.
-- Payment plan description.
-- Payment schedule: installment %, frequency monthly/quarterly, duration.
-- Project start year, handover date, project status.
+On click:
+- Navigate to the project page.
 
-الموجود جزئياً:
-- `project_start_year`, `project_handover_date`, `developer_brief`, `down_payment_price`, `installments`.
+Acceptance criteria:
+- Homepage shows projects immediately below hero.
+- Only published projects appear publicly.
+- Project cards link to the correct project detail page.
 
-المطلوب:
-- جعل off-plan layout يقرأ schedule structured بدل `string[]` فقط إن أمكن:
-  - `installments[].percentage`
-  - `installments[].frequency`
-  - `installments[].duration`
-- إضافة validation في لوحة التحكم للـcover/floor plans/developer عندما النوع Off-plan.
+Verification:
+- Homepage includes `ProjectsSection` immediately after `HeroSection`.
+- Frontend build passed.
+- Backend project status filtering is implemented and migrated.
 
-## 3. Compliance & Image Processing
+### 5. Project Page Structure
 
-المتطلب النهائي:
+Status: `Done`
 
-- عند `Approved` فقط يتم تفعيل compliance mode.
-- Abu Dhabi:
-  - إذا `ADGM Number` أو `Guaranteed Badge` موجود، يتم تطبيق overlay.
-  - إذا غير موجودين، لا يتم منع الموافقة.
-- Dubai:
-  - إذا QR Code موجود، يتم embed على الصور.
-  - إذا غير موجود، لا يتم منع الموافقة.
-- Floor plans لا يطبق عليها overlay أبداً.
-- Original images تبقى كما هي.
-- Processed images تستخدم للنشر/export فقط.
-- لا يتم تغيير أسماء الحقول الحالية؛ الإضافات تكون incremental.
+Critical layout requirement:
+- First view above the fold must show the contact form immediately.
+- Project title, description, and image gallery must be available by scrolling.
 
-الوضع الحالي:
+Goal:
+- User lands on the project page and sees the form immediately.
+- If interested, user scrolls to view project details.
 
-- `types/property.ts` يحتوي `qr_code_property_booster`, `adgm`, `rera`, `permit_number`.
-- لا يوجد:
-  - `guaranteed_badge`
-  - `processed_cover_image`
-  - `processed_property_photos`
-  - `approval_status`
-  - image processing trigger
+Acceptance criteria:
+- Project landing page opens with lead capture visible above the fold.
+- Project content and gallery remain accessible by scroll.
+- The page feels like a conversion landing page, not a blog page.
 
-المطلوب:
+Verification:
+- Project detail page starts with a lead-first hero and visible `ProjectLeadForm`.
+- Project title, description, sections, gallery, and details remain available below the first view.
+- Frontend build passed.
 
-- Backend:
-  - إضافة status workflow: `Preparation`, `Approved`.
-  - إضافة job/service لمعالجة الصور عند الانتقال إلى Approved.
-  - حفظ original وprocessed images منفصلين.
-- Frontend:
-  - لوحة التحكم تعرض original images.
-  - الموقع يستخدم processed images إن وجدت، وإلا original.
-  - عرض Compliance section فقط عند وجود البيانات.
+### 6. Project Contact Form
 
-## 4. Projects Module + Lead Capture
+Status: `Done`
 
-### الموجود حالياً
+Each project must have its own form.
 
-- `types/project.ts` يحتوي project, sections, gallery, details.
-- `store/projects.ts` يحتوي public/admin CRUD.
-- `pages/projects/index.vue` تعرض projects.
-- `pages/projects/[id]-[slug].vue` تعرض hero ثم sections/gallery/details.
-- `pages/admin/projects/*` تدعم basic info, sections, gallery, details.
+Fields:
+- Name.
+- Phone.
+- Email.
+- Message, optional.
 
-### الفجوات مقابل المتطلب
+Submission behavior:
+- Save data in CRM.
+- Link lead to the specific project.
+- Save lead source as `Project Page`.
 
-المتطلب:
-- Projects section مباشرة بعد Hero في الصفحة الرئيسية.
-- كل مشروع Landing Page.
-- Contact form ظاهر مباشرة في أول view.
-- بعد ذلك المحتوى يكون scroll.
-- Form fields: name, phone, email, message optional.
-- Submission يحفظ lead في CRM ويربطه بـproject.
-- status: Published/Draft.
-- Upload 4-5 images.
-- Description blog-style content.
+Expected lead payload example:
 
-الوضع الحالي:
-- الصفحة الرئيسية تعرض `HeroSection`, `AboutSection`, `PropertiesSection`; لا يوجد Projects section بعد Hero.
-- صفحة المشروع تبدأ بـHero ومحتوى، وليس contact form first.
-- لا يوجد form في صفحة المشروع.
-- لا يوجد lead submission مربوط بـproject_id.
-- لا يوجد status Published/Draft في `Project` type أو admin form.
+```json
+{
+  "name": "Client Name",
+  "phone": "+971...",
+  "email": "client@example.com",
+  "project": "Yas Park",
+  "source": "Project Page"
+}
+```
 
-المطلوب:
+Current implementation notes:
+- Project contact form exists.
+- Project metadata has been added to contact/admin message handling.
+- Contact admin table displays project information.
+- Contact backend search includes project, source, page URL, and UTM fields.
 
-- إضافة `ProjectLeadForm` في أول viewport من صفحة المشروع.
-- عند submit:
-  - `name`
-  - `phone`
-  - `email`
-  - `message`
-  - `project_id`
-  - `project_title`
-  - `source = Project Page`
-  - `page_url`
-  - `utm_*` من query params إن وجدت
-- Backend endpoint مقترح:
-  - `POST /project-leads` أو توسيع `contact-us` بحقول project/source.
-- CRM admin:
-  - عرض project leads منفصلة أو داخل contact messages مع filter by source/project.
-- إضافة `status` للمشروع:
-  - `Published`
-  - `Draft`
-- Public API يرجع published فقط.
-- Homepage:
-  - إضافة `ProjectsSection` بعد `HeroSection` مباشرة.
+Verification:
+- Frontend build passed.
+- Backend contact resource/request/controller fields are in place.
+- Project lead form submits project ID, project title, source, page URL, and UTM fields.
 
-## 5. API Governance
+### 7. Marketing Use Case
 
-المستند يؤكد:
+Status: `Done`
 
-- لا يتم تغيير أسماء الحقول الحالية.
-- لا يتم تغيير معنى القيم الحالية.
-- أي متطلبات جديدة تضاف كحقول جديدة فقط.
-- يجب توثيق كل إضافة.
+Requirement:
+- Project pages will be used for advertising campaigns and lead generation.
+- Campaign traffic will go to:
+  - Project Page.
+  - Contact Form.
 
-المطلوب:
+Acceptance criteria:
+- Each project page works as a standalone landing page.
+- Every campaign lead can be traced to its project.
+- CRM can identify source project and source page.
+- UTM parameters are stored where available.
 
-- إنشاء API contract موحد للعقارات والوكلاء والمشاريع.
-- إضافة mapper مركزي بدلاً من mapping متكرر ومختلف بين `store/properties.ts` و`composables/useProperties.ts`.
-- تثبيت enum values:
-  - `property_type`
-  - `sale_type`
-  - `offering_type`
-  - `inventory_status`
-  - `approval_status`
-  - `project_status`
+Verification:
+- Project page is lead-first.
+- Contact payload stores project/source/page/UTM metadata.
+- Admin contact search and table expose project lead context.
 
-## 6. ملاحظات تقنية من الكود
+### 8. Final Goal
 
-- `types/property.ts` لا يصدّر `NormalizedProperty` رغم استخدامه في:
-  - `store/properties.ts`
-  - `pages/properties/index.vue`
-  - `pages/properties/[id]-[slug].vue`
-  - `components/PropertyCard.vue`
-  - `components/PropertiesSection.vue`
-- `store/agents.ts` لا يحتوي admin CRUD المستخدم في `components/admin/agents/form.vue`.
-- توجد ملفات `copy` مثل:
-  - `store/agents copy.ts`
-  - `store/properties copy.ts`
-  - `pages/properties/[id]-[slug] copy.vue`
-  - `pages/properties/index copy.vue`
-  يجب مراجعتها أو حذفها بعد التأكد، لأنها قد تحتوي implementation أقدم أو أفضل.
-- هناك encoding issue ظاهر في بعض النصوص (`â€”`, `â†’`, وArabic mojibake في admin projects).
+Status: `In progress`
 
-## 7. قائمة العمل المقترحة حسب الأولوية
+Final required model:
+- Each project equals a landing page.
+- Each campaign is linked to a project.
+- Each lead is linked to a project.
 
-### P0 - إصلاحات توقف العمل
+System integration requirement:
+- Control Panel creates and manages projects.
+- API exposes project data and receives leads.
+- Website renders landing pages and submits leads.
+- CRM/admin displays and filters project leads.
 
-- إصلاح `NormalizedProperty` type export أو إعادة تعريفه بشكل صحيح.
-- إصلاح `store/agents.ts` ليطابق استخدام admin form:
-  - `fetchAgents`
-  - `fetchAgent`
-  - `createAgent`
-  - `updateAgent`
-  - `deleteAgent` إن مطلوب
-- توحيد مصدر agents وعدم استخدام external fetch مباشر في production store.
-- إصلاح mapping الصور في لوحة تحكم العقارات.
-- إصلاح apartment filter عبر توحيد values/case.
+## API And Integration Requirements
 
-### P1 - صفحات العقارات حسب المستندات
+Status: `In progress`
 
-- بناء schema ديناميكي حسب listing type.
-- تحديث `types/property.ts` لإضافة الحقول الناقصة كإضافات فقط.
-- تحديث admin property form ليشمل:
-  - cover/gallery/floor plans
-  - internal/external/total size
-  - rental fields
-  - off-plan payment schedule
-  - compliance fields
-  - approval status
-- تحديث property detail page لعرض sections المطلوبة فقط حسب النوع.
-- إضافة contact form مربوط بـlisting agent.
+The final instruction requires developers to:
+- Fix all existing issues.
+- Establish a clear API structure.
+- Implement the Projects module correctly.
+- Ensure full integration between:
+  - Control Panel.
+  - API.
+  - Website.
 
-### P1 - Compliance
+API structure expectations:
+- Stable field names.
+- Clear response formats.
+- Validation errors returned consistently.
+- Public endpoints only return published/visible data.
+- Admin endpoints expose draft/internal records.
+- Contact/project lead payloads preserve source, linked entity, page URL, and UTM data.
 
-- Backend image processing عند Approved.
-- تخزين original وprocessed images.
-- Frontend يستخدم processed للعرض العام.
-- استثناء floor plans دائماً.
-- عدم منع approval بسبب missing compliance حسب القاعدة النهائية.
+Current implementation notes:
+- Project status is now persisted and returned by API.
+- Project list can filter by `status=Published`.
+- Current project detail route is still shared between public and admin, so draft detail visibility should be revisited if strict public hiding is required.
 
-### P1 - Projects Lead Engine
+## Priority Order
 
-- إضافة project status Published/Draft.
-- إضافة Projects section بعد Hero في homepage.
-- تعديل project page لتبدأ بـContact Form في first view.
-- إضافة endpoint/CRM flow لحفظ project leads.
-- حفظ source وproject_id وUTM params.
+### P0: Close Existing Issues
 
-### P2 - Agents hierarchy and profile completeness
+- Employee/agent creation final verification.
+- Agent profile final verification.
+- Property image display final verification.
+- Apartment filter verification/fix.
+- Agent dates and activity tracking implementation.
 
-- إضافة level hierarchy.
-- sorting حسب CRE ثم joining date.
-- عرض جميع حقول profile المطلوبة.
-- دعم rich text/line breaks في about.
-- validation:
-  - unique cre
-  - working_email format
-  - mobile format
-  - years_of_experience numeric
+### P1: Projects Lead Engine
 
-### P2 - Activity tracking
+- Verify project admin CRUD and status.
+- Verify homepage project section.
+- Ensure project page form is above the fold.
+- Verify project lead submission and CRM display.
+- Verify filters/search for project leads.
 
-- تصميم activity timeline.
-- ربطه بالـleads والوكلاء والمشاريع.
-- عرض first contact/last activity/last update في CRM.
+### P1: Dynamic Property Attributes
 
-## 8. Definition of Done
+- Define dynamic attribute schema.
+- Add control panel management for attributes.
+- Render attributes by property type from API.
+- Remove dependency on hardcoded frontend attribute lists.
 
-- كل نوع عقار يعرض فقط الحقول الخاصة به.
-- لوحة التحكم تستطيع إنشاء وتحديث كل الحقول المطلوبة بدون فقدان بيانات بعد refresh.
-- الصور تظهر في لوحة التحكم والموقع.
-- compliance يطبق فقط عند توفر بياناته وبعد approval.
-- contact forms تحفظ leads في CRM مع source وentity link.
-- Projects landing pages جاهزة للحملات الإعلانية.
-- Agents page تعرض hierarchy وتستخدم sorting المطلوب.
-- لا توجد hardcoded field mappings خارج mapper موثق.
-- TypeScript build يمر بدون أخطاء types.
+### P2: API Governance And Cleanup
+
+- Document API contracts for properties, agents, projects, and leads.
+- Normalize enum values.
+- Remove obsolete copy files after confirming they are unused.
+- Fix any remaining encoding/mojibake text in user-facing files.
+
+## Notes For Future Work
+
+- Keep all requirement documentation in English.
+- Focus on PDF/client requirements before general improvements.
+- Do not treat Projects as a blog feature; it is a lead generation engine.
+- Do not hardcode final property attribute behavior; the final target is control-panel-driven dynamic attributes.

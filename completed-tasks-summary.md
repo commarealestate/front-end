@@ -1,65 +1,161 @@
-# ملخص التحديثات المنجزة
+# Completed Tasks Summary
 
-هذا الملف يلخص بشكل بسيط وغير تقني التحديثات التي تمت على المشروع حتى الآن.
+Last updated: 2026-06-08
 
-## صفحة العقار
+This file summarizes completed CRM and website requirement work in plain English. The detailed requirement tracker remains `requirements-audit.md`.
 
-- تم تحسين صفحة تفاصيل العقار حتى تعرض معلومات أوضح حسب نوع العقار.
-- تم إضافة أقسام خاصة للعقارات المعروضة للبيع.
-- تم إضافة أقسام خاصة للعقارات المعروضة للإيجار.
-- تم إضافة أقسام خاصة لعقارات الـ Off-plan.
-- تم عرض تفاصيل الإيجار بشكل أوضح مثل مدة الدفع، عدد الشيكات، التأمين، التوفر، ومدة العقد عند توفرها.
-- تم عرض تفاصيل الـ Off-plan مثل المطور، الدفعة الأولى، خطة الدفع، تاريخ التسليم، وحالة المشروع عند توفرها.
-- تم إضافة قسم مستقل لمخططات الطوابق Floor Plans بدل خلطها مع صور العقار.
-- تم تحسين عرض الصور بحيث يمكن استخدام الصور المعالجة إذا كانت موجودة، والرجوع للصور الأصلية إذا لم تكن موجودة.
+## Existing Issue Fixes
 
-## نموذج التواصل في صفحة العقار
+### Employee / Agent Creation
 
-- تم إضافة نموذج تواصل مباشر داخل صفحة العقار.
-- النموذج يرسل بيانات العميل مثل الاسم، الهاتف، البريد، والرسالة.
-- يتم ربط الطلب بالعقار نفسه.
-- يتم إرسال رقم العقار، عنوان العقار، والرقم المرجعي مع الطلب.
-- يتم ربط الطلب بالوكيل المسؤول عن العقار إذا كان موجودًا.
-- يتم حفظ مصدر الطلب على أنه قادم من صفحة العقار.
-- يتم حفظ رابط الصفحة وبيانات الحملات الإعلانية UTM إذا كانت موجودة.
+- Agent creation now uses the backend admin API path.
+- Frontend submit/loading state resets reliably, so the form should not hang after failed submission.
+- API errors are parsed and shown through notifications plus inline/general form errors.
+- Backend validation exists for agent creation.
+- Duplicate agent email validation now checks the real `e_mail` column, so duplicate email returns a clear validation failure instead of a database/runtime error.
 
-## لوحة تحكم العقارات
+### Property Images In Control Panel
 
-- تم فصل صور العقار إلى صور غلاف وصور معرض.
-- تم إضافة دعم منفصل لمخططات الطوابق Floor Plans.
-- يمكن رفع مخططات الطوابق من لوحة التحكم.
-- يمكن معاينة مخططات الطوابق قبل الحفظ.
-- يمكن حذف مخططات الطوابق الموجودة.
-- مخططات الطوابق لم تعد جزءًا من معرض الصور العام للعقار.
+- Admin property list/grid image mapping has been fixed.
+- Property cards now display the expected property images.
+- Image mapping is aligned around normalized image fields such as cover/gallery/floor-plan sources.
 
-## المشاريع
+### Agent Profile
 
-- تم إضافة حالة للمشروع: Published أو Draft.
-- يمكن تحديد حالة المشروع عند إنشاء مشروع جديد.
-- يمكن تعديل حالة المشروع من صفحة تعديل المشروع.
-- صفحة المشاريع العامة تعرض المشاريع المنشورة فقط عند توفر الحالة.
-- قسم المشاريع في الصفحة الرئيسية يعرض المشاريع المنشورة فقط عند توفر الحالة.
+- Agent store supports backend API CRUD for admin usage.
+- Full agent name display uses first name, second name/middle name, and last name.
+- Active/inactive status is mapped from the backend `active` field.
+- Profile photo handling supports personal photo and normalized fallback image data.
+- Agent form submits mapped fields through `FormData`.
+- Work position/job title is visible in relevant admin and website contexts.
+- Agent `website_level` and `display_order` are supported for website display control.
 
-## النماذج والطلبات
+### Apartments Filter
 
-- تم توسيع بيانات رسائل التواصل حتى تدعم طلبات المشاريع وطلبات العقارات.
-- طلبات العقارات الآن يمكن أن تحتوي على رقم العقار، مرجع العقار، عنوان العقار، والوكيل المرتبط.
-- تم توحيد طريقة إرسال بيانات المصدر ورابط الصفحة وبيانات الحملات.
+- Frontend property type normalization includes apartment variants.
+- Backend property filtering now handles case/plural variants such as `apartment`, `Apartment`, and `Apartments`.
+- The filter no longer depends on exact stored casing for apartment-style property type values.
 
-## البيانات والربط مع النظام
+### Agent Page Structure And Sorting
 
-- تم إضافة دعم لحقول جديدة قادمة من النظام مثل:
-  - الصور المعالجة.
-  - مخططات الطوابق.
-  - حالة الموافقة.
-  - بيانات الإيجار الإضافية.
-  - بيانات خطة الدفع.
-  - بيانات الـ Off-plan.
-- تم الحفاظ على الحقول القديمة بدون تغيير أسمائها.
-- الإضافات تمت بشكل تدريجي حتى لا تكسر البيانات الحالية.
+- Website agent display supports the required hierarchy:
+  - Level 1: Higher Management.
+  - Level 2: Management.
+  - Level 3: Agents.
+- Admin can assign `website_level`.
+- Admin can set `display_order` to prioritize important agents.
+- Backend and frontend both support `website_level` and `display_order`.
 
-## التحقق
+## Projects Lead Generation Engine
 
-- تم تشغيل build للمشروع بنجاح.
-- لا توجد أخطاء تمنع بناء المشروع.
-- بقيت بعض التحذيرات القديمة غير المانعة مثل تحذيرات Sass وحجم بعض الملفات.
+### Project Module
+
+- Projects module exists in the website and control panel.
+- Admin can create and update projects.
+- Project status is supported in frontend and backend:
+  - Published.
+  - Draft.
+- Backend now stores, returns, and filters project `status`.
+- A project status migration was added and run locally.
+- Project title search in the backend was fixed to use the correct request value.
+
+### Project Media
+
+- Project cover image upload exists.
+- Admin project creation now supports uploading up to 5 gallery images.
+- Gallery images show previews before saving.
+- Gallery images can be removed before saving.
+- Gallery images are submitted in the backend-supported `gallery[n][image]` format.
+
+### Homepage Projects Section
+
+- Homepage includes `ProjectsSection` immediately after `HeroSection`.
+- Public project lists request published projects.
+- Backend project list supports `status=Published` filtering.
+
+### Project Landing Page
+
+- Project detail page uses a lead-first layout.
+- The contact form appears in the first view above the fold.
+- Project title, description, sections, gallery, and details remain available below the first view.
+- The page now behaves as a landing page/lead capture page rather than a blog page.
+
+### Project Contact Form And CRM Leads
+
+- Each project page has a project-specific contact form.
+- Form fields include:
+  - Name.
+  - Phone.
+  - Email.
+  - Message.
+- Project lead submission stores:
+  - Project ID.
+  - Project title.
+  - Source: `Project Page`.
+  - Page URL.
+  - UTM values when present.
+- Contact backend accepts and returns project/source/UTM metadata.
+- Admin contact table displays project information.
+- Admin contact search includes project, source, page URL, and UTM fields.
+
+## Contact Messages Admin
+
+- Contact message backend filters/search were expanded.
+- Contact message table includes project context.
+- Message date formatting now handles invalid/missing dates more safely.
+- Message table layout was adjusted so project context can fit without relying on the message body column.
+
+## Property Details Page
+
+- Property detail page includes a contact form.
+- Property form submissions can include property metadata and listing agent context.
+- Contact/sidebar layout was tightened so it displays more cleanly in the property detail view.
+- Share action was improved to avoid the browser alert dialog:
+  - Uses native share when available.
+  - Falls back to copy-to-clipboard.
+  - Shows inline button state/error feedback.
+
+## Localization And Mapping Fixes
+
+- Arabic property location display was fixed so Arabic pages prefer Arabic location values when available.
+- Property edit form mapping for Arabic location values was fixed.
+- Agent detail/back links were fixed to preserve locale routing.
+- Agent slug/id routing was fixed to avoid invalid `undefined-*` agent URLs.
+
+## Requirements Documentation
+
+- `requirements-audit.md` was rewritten in English.
+- The requirements tracker now includes:
+  - Current status per item.
+  - Acceptance criteria.
+  - Remaining work.
+  - Verification notes.
+- The tracker marks completed items as done and keeps open items visible.
+
+## Verification Completed
+
+- Frontend production build passed with `npm run build`.
+- Backend PHP syntax checks passed for changed backend files.
+- New project status migration ran successfully.
+- Nuxt dev server was restarted and responded at `http://localhost:3000/`.
+
+Known non-blocking verification notes:
+- Existing frontend build warnings remain, including duplicate imports, Sass deprecation warnings, runtime image warnings, and chunk-size warnings.
+- Backend `php artisan test` still has one unrelated default test failure because `/` returns 404 instead of the test's expected 200.
+- Backend `php artisan route:list` is blocked by an existing MyFatoorah package/controller route issue unrelated to the completed changes.
+
+## Still Not Completed
+
+- Agent dates/activity tracking:
+  - First contact date.
+  - Last activity.
+  - Last update visibility.
+  - Full timeline.
+- Full CRM activity timeline:
+  - Lead Created.
+  - WhatsApp Sent.
+  - Call Made.
+  - Meeting Scheduled.
+- Fully dynamic property attributes from control panel.
+- Decide whether project descriptions need a true rich-text/blog-style editor instead of a textarea.
+- Strict public hiding for draft project detail pages may need a separate public/admin project detail API split.
