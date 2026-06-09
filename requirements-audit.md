@@ -222,7 +222,7 @@ Acceptance criteria:
 
 ## Section 2: Attached Documents - Property Attributes
 
-Status: `In progress`
+Status: `Done`
 
 Documents referenced:
 - Resale Attributes.
@@ -243,14 +243,16 @@ Required behavior:
 - Website reads from the API/attribute schema instead of hardcoded page sections.
 
 Current implementation notes:
-- Property detail page displays many type-specific fields.
-- This is not yet a fully dynamic control-panel-driven attribute system.
+- `property_attribute_definitions` table stores the attribute schema per listing category (general, resale, rental, off_plan).
+- Seeder bootstraps the existing resale/rental/off-plan field sets from the previous hardcoded frontend lists.
+- `PropertyAttributeService` resolves listing category and builds `attribute_groups` from active definitions plus property column/custom values.
+- `PropertyResource` returns `listing_category` and `attribute_groups`.
+- Admin CRUD exists at `/admin/property-attributes` with API routes under `admins/property-attribute-definitions`.
+- Public property detail page renders attribute groups dynamically from API instead of hardcoded Vue field lists.
 
 Remaining work:
-- Define backend attribute schema/config per property listing type.
-- Add admin controls for attributes.
-- Return attribute groups from API.
-- Render property attributes dynamically on the website.
+- Optional: extend admin property edit form to render type-specific fields from the same schema.
+- Optional: add more custom attributes through `custom_attributes` JSON for fields without dedicated columns.
 
 Acceptance criteria:
 - Adding/removing/reordering an attribute in the control panel changes website display without code changes.

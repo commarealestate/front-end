@@ -58,6 +58,7 @@ const { collapsed } = toRefs(props)
 const menuItems = [
   { label: 'admin.sidebar.dashboard', path: '/admin', icon: 'i-heroicons-presentation-chart-bar' },
   { label: 'admin.sidebar.properties', path: '/admin/properties', icon: 'i-heroicons-building-office' },
+  { label: 'admin.sidebar.property_attributes', path: '/admin/property-attributes', icon: 'i-heroicons-adjustments-horizontal' },
   { label: 'admin.sidebar.agents', path: '/admin/agents', icon: 'i-heroicons-users' },
   { label: 'admin.sidebar.projects', path: '/admin/projects', icon: 'i-heroicons-folder' },
   { label: 'admin.sidebar.blogs', path: '/admin/blogs', icon: 'i-heroicons-newspaper' },

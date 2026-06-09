@@ -240,6 +240,8 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
     externalSize: raw.external_size,
     permitNumber: raw.permit_number,
     approvalStatus: raw.approval_status,
+    listingCategory: raw.listing_category || "",
+    attributeGroups: Array.isArray(raw.attribute_groups) ? raw.attribute_groups : [],
   };
 }
 

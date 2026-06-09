@@ -82,6 +82,8 @@ export interface RawApiProperty {
   external_size?: string | null;
   permit_number?: string | null;
   approval_status?: string | null;
+  listing_category?: string;
+  attribute_groups?: PropertyAttributeGroup[];
 }
 
 export interface PaymentScheduleItem {
@@ -177,6 +179,45 @@ export interface NormalizedProperty {
   externalSize?: string | null;
   permitNumber?: string | null;
   approvalStatus?: string | null;
+  listingCategory?: string;
+  attributeGroups: PropertyAttributeGroup[];
+}
+
+export interface PropertyAttributeField {
+  key: string;
+  label: string;
+  value: string;
+  type: string;
+  icon: string;
+}
+
+export interface PropertyAttributeGroup {
+  key: string;
+  title: string;
+  icon: string;
+  listing_category: string;
+  fields: PropertyAttributeField[];
+}
+
+export interface PropertyAttributeDefinition {
+  id: number;
+  key: string;
+  label_en: string;
+  label_ar?: string | null;
+  listing_category: string;
+  group_key: string;
+  group_label_en: string;
+  group_label_ar?: string | null;
+  field_type: string;
+  display_order: number;
+  icon?: string | null;
+  is_active: boolean;
+  show_on_website: boolean;
+  column_name?: string | null;
+  fallback_column?: string | null;
+  value_suffix?: string | null;
+  value_format?: string | null;
+  options?: string[] | null;
 }
 
 export interface ApiPaginatedResponse<T> {

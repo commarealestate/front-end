@@ -203,170 +203,27 @@
               </div>
             </div>
 
-            <!-- Detailed Property Info Grid -->
-            <div class="bg-white rounded-2xl shadow-luxury border border-comma-border-subtle p-6 lg:p-8">
-              <h3 class="text-2xl font-bold text-comma-neutral-900 mb-6 font-display flex items-center gap-2">
-                <Icon name="mdi:clipboard-list" class="w-6 h-6 text-comma-primary" />
-                {{ $t('property_page.property_details') }}
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="flex items-start gap-3">
-                  <Icon name="mdi:tag" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.reference') }}</div>
-                    <div class="font-medium">{{ property.referenceNumber }}</div>
-                  </div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <Icon name="mdi:cash" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.price') }}</div>
-                    <div class="font-medium">{{ formatPrice(property.price) }}</div>
-                  </div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <Icon name="mdi:arrow-expand" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.size') }}</div>
-                    <div class="font-medium">{{ propertySize }} sqft</div>
-                  </div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <Icon name="mdi:bed" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.bedrooms') }}</div>
-                    <div class="font-medium">{{ property.bedroom ?? 0 }}</div>
-                  </div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <Icon name="mdi:shower" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.bathrooms') }}</div>
-                    <div class="font-medium">{{ property.bathroom ?? 0 }}</div>
-                  </div>
-                </div>
-                <div v-if="property.parking" class="flex items-start gap-3">
-                  <Icon name="mdi:car" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.parking') }}</div>
-                    <div class="font-medium">{{ property.parking }}</div>
-                  </div>
-                </div>
-                <div v-if="property.buildYear" class="flex items-start gap-3">
-                  <Icon name="mdi:calendar" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.year_built') }}</div>
-                    <div class="font-medium">{{ property.buildYear }}</div>
-                  </div>
-                </div>
-                <div v-if="property.developers" class="flex items-start gap-3">
-                  <Icon name="mdi:office-building-cog" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.developer') }}</div>
-                    <div class="font-medium">{{ property.developers }}</div>
-                  </div>
-                </div>
-                <div v-if="property.offeringType" class="flex items-start gap-3">
-                  <Icon name="mdi:handshake" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.offering_type') }}</div>
-                    <div class="font-medium">{{ property.offeringType }}</div>
-                  </div>
-                </div>
-                <div v-if="property.projectStatus" class="flex items-start gap-3">
-                  <Icon name="mdi:progress-clock" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.project_status') }}</div>
-                    <div class="font-medium">{{ property.projectStatus }}</div>
-                  </div>
-                </div>
-                <div v-if="property.availableFrom" class="flex items-start gap-3">
-                  <Icon name="mdi:calendar-check" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.available_from') }}</div>
-                    <div class="font-medium">{{ formatDate(property.availableFrom) }}</div>
-                  </div>
-                </div>
-                <div v-if="property.paymentMethod" class="flex items-start gap-3">
-                  <Icon name="mdi:credit-card" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.payment_method') }}</div>
-                    <div class="font-medium">{{ property.paymentMethod }}</div>
-                  </div>
-                </div>
-                <div v-if="property.serviceCharge" class="flex items-start gap-3">
-                  <Icon name="mdi:cash-refund" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.service_charge') }}</div>
-                    <div class="font-medium">{{ formatPrice(Number(property.serviceCharge)) }}</div>
-                  </div>
-                </div>
-                <div v-if="property.downPaymentPrice" class="flex items-start gap-3">
-                  <Icon name="mdi:bank" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.down_payment') }}</div>
-                    <div class="font-medium">{{ formatPrice(Number(property.downPaymentPrice)) }}</div>
-                  </div>
-                </div>
-                <div v-if="property.saleType" class="flex items-start gap-3">
-                  <Icon name="mdi:sale" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.sale_type') }}</div>
-                    <div class="font-medium">{{ property.saleType }}</div>
-                  </div>
-                </div>
-                <div v-if="property.furnished" class="flex items-start gap-3">
-                  <Icon name="mdi:sofa" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.furnished') }}</div>
-                    <div class="font-medium">{{ property.furnished }}</div>
-                  </div>
-                </div>
-                <div v-if="property.finishingType" class="flex items-start gap-3">
-                  <Icon name="mdi:palette" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.finishing_type') }}</div>
-                    <div class="font-medium">{{ property.finishingType }}</div>
-                  </div>
-                </div>
-                <div v-if="property.floorNo" class="flex items-start gap-3">
-                  <Icon name="mdi:floor-plan" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.floor_no') }}</div>
-                    <div class="font-medium">{{ property.floorNo }}</div>
-                  </div>
-                </div>
-                <div v-if="property.hasGarden" class="flex items-start gap-3">
-                  <Icon name="mdi:flower" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.garden') }}</div>
-                    <div class="font-medium">{{ property.hasGarden ? $t('yes') : $t('no') }}</div>
-                  </div>
-                </div>
-                <div v-if="property.hasKitchen" class="flex items-start gap-3">
-                  <Icon name="mdi:countertop" class="w-5 h-5 text-comma-primary mt-0.5" />
-                  <div>
-                    <div class="text-sm text-comma-neutral-600">{{ $t('property_page.kitchen') }}</div>
-                    <div class="font-medium">{{ property.hasKitchen ? $t('yes') : $t('no') }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Listing-specific Details -->
-            <div v-if="listingSections.length" class="space-y-8">
-              <div v-for="section in listingSections" :key="section.key"
-                class="bg-white rounded-2xl shadow-luxury border border-comma-border-subtle p-6 lg:p-8">
+            <!-- Dynamic Property Attribute Groups -->
+            <div v-if="attributeGroups.length" class="space-y-8">
+              <div
+                v-for="section in attributeGroups"
+                :key="section.key"
+                class="bg-white rounded-2xl shadow-luxury border border-comma-border-subtle p-6 lg:p-8"
+              >
                 <h3 class="text-2xl font-bold text-comma-neutral-900 mb-6 font-display flex items-center gap-2">
                   <Icon :name="section.icon" class="w-6 h-6 text-comma-primary" />
                   {{ section.title }}
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div v-for="row in section.rows" :key="row.label" class="flex items-start gap-3">
-                    <Icon :name="row.icon" class="w-5 h-5 text-comma-primary mt-0.5" />
+                  <div
+                    v-for="field in section.fields"
+                    :key="`${section.key}-${field.key}`"
+                    class="flex items-start gap-3"
+                  >
+                    <Icon :name="field.icon" class="w-5 h-5 text-comma-primary mt-0.5" />
                     <div>
-                      <div class="text-sm text-comma-neutral-600">{{ row.label }}</div>
-                      <div class="font-medium whitespace-pre-line">{{ row.value }}</div>
+                      <div class="text-sm text-comma-neutral-600">{{ field.label }}</div>
+                      <div class="font-medium whitespace-pre-line">{{ field.value }}</div>
                     </div>
                   </div>
                 </div>
@@ -661,50 +518,6 @@ const defaultEmail = 'info@commarealestate.ae'
 const defaultWhatsapp = '971544411700'
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&fit=crop'
 
-type DetailRow = {
-  label: string
-  value: string
-  icon: string
-}
-
-function textValue(value: unknown): string {
-  if (value === null || value === undefined) return ''
-  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : ''
-  if (typeof value === 'string') return value.trim()
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-  return ''
-}
-
-function includesAny(value: string, terms: string[]) {
-  const normalized = value.toLowerCase()
-  return terms.some((term) => normalized.includes(term))
-}
-
-function detailRow(label: string, value: unknown, icon = 'mdi:information-outline'): DetailRow | null {
-  const text = textValue(value)
-  return text ? { label, value: text, icon } : null
-}
-
-function currencyRow(label: string, value: unknown, icon = 'mdi:cash'): DetailRow | null {
-  const text = textValue(value)
-  if (!text) return null
-  const numeric = Number(text)
-  return {
-    label,
-    value: Number.isFinite(numeric) ? formatPrice(numeric) : text,
-    icon,
-  }
-}
-
-function dateRow(label: string, value: unknown, icon = 'mdi:calendar'): DetailRow | null {
-  const text = textValue(value)
-  return text ? { label, value: formatDate(text), icon } : null
-}
-
-function compactRows(rows: Array<DetailRow | null>): DetailRow[] {
-  return rows.filter((row): row is DetailRow => Boolean(row))
-}
-
 // Computed properties
 const propertyTitle = computed(() => {
   if (!property.value) return ''
@@ -745,20 +558,7 @@ const currentMainImage = computed(() => {
   return FALLBACK_IMAGE
 })
 
-const listingSearchText = computed(() => {
-  if (!property.value) return ''
-  return [
-    property.value.saleType,
-    property.value.offeringType,
-    property.value.status,
-    property.value.inventoryStatus,
-    property.value.projectStatus,
-  ].filter(Boolean).join(' ')
-})
-
-const isRentalListing = computed(() => includesAny(listingSearchText.value, ['rent', 'rental', 'lease']))
-const isOffPlanListing = computed(() => includesAny(listingSearchText.value, ['off plan', 'off-plan', 'off_plan', 'under construction']))
-const isResaleListing = computed(() => !isRentalListing.value && !isOffPlanListing.value)
+const attributeGroups = computed(() => property.value?.attributeGroups || [])
 
 const floorPlanImages = computed(() => {
   if (!property.value) return []
@@ -767,75 +567,6 @@ const floorPlanImages = computed(() => {
     plans.unshift(property.value.floorPlan)
   }
   return plans
-})
-
-const listingSections = computed(() => {
-  if (!property.value) return []
-  const p = property.value
-  const sections: Array<{ key: string; title: string; icon: string; rows: DetailRow[] }> = []
-
-  if (isResaleListing.value) {
-    const rows = compactRows([
-      detailRow('Reference Number', p.referenceNumber, 'mdi:tag'),
-      detailRow('Total Size', p.totalAreaSqft ? `${p.totalAreaSqft} sqft` : '', 'mdi:arrow-expand'),
-      detailRow('Internal Size', p.internalSize ? `${p.internalSize} sqft` : '', 'mdi:floor-plan'),
-      detailRow('External Size', p.externalSize ? `${p.externalSize} sqft` : '', 'mdi:image-filter-hdr'),
-      detailRow('View', p.view?.join(', '), 'mdi:eye'),
-      detailRow('Project Status', p.projectStatus, 'mdi:progress-clock'),
-      detailRow('Project Start Year', p.projectStartYear, 'mdi:calendar-start'),
-      dateRow('Handover Date', p.projectHandoverDate, 'mdi:calendar-check'),
-      detailRow('Developer', p.developers, 'mdi:office-building'),
-      detailRow('Developer Brief', p.developerBrief, 'mdi:file-document-outline'),
-      detailRow('Payment Method', p.paymentMethod, 'mdi:credit-card'),
-    ])
-    if (rows.length) {
-      sections.push({ key: 'resale', title: 'Resale Details', icon: 'mdi:home-city', rows })
-    }
-  }
-
-  if (isRentalListing.value) {
-    const rows = compactRows([
-      currencyRow('Rent Price', p.price, 'mdi:cash'),
-      detailRow('Billing Cycle', p.billingCycle || p.rentalPeriod, 'mdi:calendar-sync'),
-      detailRow('Number of Cheques', p.noOfCheques, 'mdi:checkbook'),
-      detailRow('Furnishing', p.furnished, 'mdi:sofa'),
-      detailRow('Availability', p.availabilityStatus || p.availability, 'mdi:home-clock'),
-      dateRow('Available From', p.availableFrom, 'mdi:calendar-check'),
-      detailRow('Contract Duration', p.contractDuration, 'mdi:file-clock-outline'),
-      detailRow('Minimum Contract Duration', p.minimumContractDuration, 'mdi:timer-sand'),
-      detailRow('Maximum Contract Duration', p.maximumContractDuration, 'mdi:timer-sand-full'),
-      currencyRow('Security Deposit', p.securityDeposit, 'mdi:shield-home'),
-      detailRow('Chiller', p.chiller || p.acType, 'mdi:snowflake'),
-      detailRow('Renewal Terms', p.renewalTerms, 'mdi:file-refresh-outline'),
-      detailRow('Notice Period', p.noticePeriod, 'mdi:bell-outline'),
-    ])
-    if (rows.length) {
-      sections.push({ key: 'rental', title: 'Payment & Lease', icon: 'mdi:key-chain', rows })
-    }
-  }
-
-  if (isOffPlanListing.value) {
-    const schedule = p.paymentSchedule
-      .map((item) => [item.percentage ? `${item.percentage}%` : '', item.frequency, item.duration, item.description].filter(Boolean).join(' - '))
-      .filter(Boolean)
-      .join('\n')
-    const rows = compactRows([
-      detailRow('Developer', p.developers, 'mdi:office-building'),
-      detailRow('Developer Brief', p.developerBrief, 'mdi:file-document-outline'),
-      currencyRow('Down Payment', p.downPaymentPrice, 'mdi:bank'),
-      detailRow('Payment Method', p.paymentMethod, 'mdi:credit-card'),
-      detailRow('Payment Plan Description', p.paymentPlanDescription, 'mdi:text-box-outline'),
-      detailRow('Payment Schedule', schedule, 'mdi:calendar-clock'),
-      detailRow('Project Start Year', p.projectStartYear, 'mdi:calendar-start'),
-      dateRow('Handover Date', p.projectHandoverDate, 'mdi:calendar-check'),
-      detailRow('Project Status', p.projectStatus, 'mdi:progress-clock'),
-    ])
-    if (rows.length) {
-      sections.push({ key: 'off-plan', title: 'Off-plan Details', icon: 'mdi:office-building-plus', rows })
-    }
-  }
-
-  return sections
 })
 
 // Agent display helpers

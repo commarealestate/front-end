@@ -917,6 +917,7 @@
     "sidebar": {
       "projects": "Projects",
       "properties": "Properties",
+      "property_attributes": "Property Attributes",
       "agents": "Agents",
       "blogs": "Blogs",
       "careers": "Careers",
