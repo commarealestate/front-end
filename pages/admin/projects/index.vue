@@ -69,7 +69,7 @@
                             ID: {{ project.project_id }}
                         </span>
                     </div>
-                    <p class="text-comma-neutral-600 text-sm line-clamp-2 mb-4">{{ project.description_en }}</p>
+                    <p class="text-comma-neutral-600 text-sm line-clamp-2 mb-4">{{ stripHtml(project.description_en) }}</p>
                     <div class="flex gap-2 pt-3 border-t border-comma-border-subtle">
                         <NuxtLink :to="`/admin/projects/${project.project_id}`"
                             class="flex-1 text-center bg-comma-primary/10 text-comma-primary font-medium px-3 py-2 rounded-xl hover:bg-comma-primary hover:text-white transition-all duration-300">
@@ -113,6 +113,7 @@
 <script setup lang="ts">
 import { useProjectsStore } from '~/store/projects'
 import type { Project } from '~/types/project'
+import { stripHtml } from '~/utils/stripHtml'
 
 
 

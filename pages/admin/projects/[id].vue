@@ -84,16 +84,14 @@
                                 </select>
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium mb-1">{{ $t('admin.projects.description_en')
+                                <label class="block text-sm font-medium mb-2">{{ $t('admin.projects.description_en')
                                     }}</label>
-                                <textarea v-model="editForm.description_en" rows="3"
-                                    class="w-full border rounded-xl px-4 py-2.5"></textarea>
+                                <RichEditor v-model="editForm.description_en" />
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium mb-1">{{ $t('admin.projects.description_ar')
+                                <label class="block text-sm font-medium mb-2">{{ $t('admin.projects.description_ar')
                                     }}</label>
-                                <textarea v-model="editForm.description_ar" rows="3"
-                                    class="w-full border rounded-xl px-4 py-2.5"></textarea>
+                                <RichEditor v-model="editForm.description_ar" />
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">{{ $t('admin.projects.current_cover')
@@ -158,7 +156,7 @@
                                     <h3 class="font-bold text-comma-neutral-900 line-clamp-1">{{ section.title_en }}
                                     </h3>
                                     <p class="text-sm text-comma-neutral-600 line-clamp-2 mt-1">{{
-                                        section.description_en }}
+                                        stripHtml(section.description_en) }}
                                     </p>
                                     <div class="flex gap-2 mt-auto pt-3">
                                         <button @click="openSectionModal(section)"
@@ -232,7 +230,7 @@
                                             <h3 class="font-bold text-comma-neutral-900">{{ detail.title_en }}</h3>
                                             <span class="text-xs text-comma-neutral-500">({{ detail.type }})</span>
                                         </div>
-                                        <p class="text-sm text-comma-neutral-600">{{ detail.description_en }}</p>
+                                        <p class="text-sm text-comma-neutral-600">{{ stripHtml(detail.description_en) }}</p>
                                     </div>
                                     <div class="flex gap-2">
                                         <button @click="openDetailModal(detail)"
@@ -308,14 +306,12 @@
                         </div>
                     </div>
                     <div>
-                        <label class="text-sm font-medium">Description (English)</label>
-                        <textarea v-model="sectionForm.description_en" rows="3"
-                            class="w-full border rounded-xl px-4 py-2.5 mt-1"></textarea>
+                        <label class="text-sm font-medium mb-2 block">Description (English)</label>
+                        <RichEditor v-model="sectionForm.description_en" />
                     </div>
                     <div>
-                        <label class="text-sm font-medium">Description (Arabic)</label>
-                        <textarea v-model="sectionForm.description_ar" rows="3"
-                            class="w-full border rounded-xl px-4 py-2.5 mt-1"></textarea>
+                        <label class="text-sm font-medium mb-2 block">Description (Arabic)</label>
+                        <RichEditor v-model="sectionForm.description_ar" />
                     </div>
                     <div>
                         <label class="text-sm font-medium">Image</label>
@@ -404,14 +400,12 @@
                         </div>
                     </div>
                     <div>
-                        <label class="text-sm font-medium">Description (English)</label>
-                        <textarea v-model="detailForm.description_en" rows="3"
-                            class="w-full border rounded-xl px-4 py-2.5 mt-1"></textarea>
+                        <label class="text-sm font-medium mb-2 block">Description (English)</label>
+                        <RichEditor v-model="detailForm.description_en" />
                     </div>
                     <div>
-                        <label class="text-sm font-medium">Description (Arabic)</label>
-                        <textarea v-model="detailForm.description_ar" rows="3"
-                            class="w-full border rounded-xl px-4 py-2.5 mt-1"></textarea>
+                        <label class="text-sm font-medium mb-2 block">Description (Arabic)</label>
+                        <RichEditor v-model="detailForm.description_ar" />
                     </div>
                     <div>
                         <label class="text-sm font-medium">Image</label>
@@ -497,7 +491,10 @@
                                     {{ project.badge_en }}
                                 </div>
                                 <h1 class="text-4xl font-bold text-white font-display">{{ project.title_en }}</h1>
-                                <p class="text-white/80 text-lg mt-2 max-w-2xl">{{ project.description_en }}</p>
+                                <div
+                                    class="prose prose-invert max-w-2xl mt-2 text-lg text-white/80"
+                                    v-html="project.description_en"
+                                />
                             </div>
                         </div>
                         <!-- Sections -->
@@ -509,7 +506,7 @@
                                     <img :src="section.image" class="h-56 w-full object-cover" />
                                     <div class="p-5">
                                         <h3 class="text-xl font-bold mb-2">{{ section.title_en }}</h3>
-                                        <p class="text-comma-neutral-600">{{ section.description_en }}</p>
+                                        <div class="prose prose-sm max-w-none text-comma-neutral-600" v-html="section.description_en" />
                                     </div>
                                 </div>
                             </div>
@@ -536,7 +533,7 @@
                                 </div>
                                 <div>
                                     <h3 class="text-xl font-bold">{{ detail.title_en }}</h3>
-                                    <p class="text-comma-neutral-600">{{ detail.description_en }}</p>
+                                    <div class="prose prose-sm max-w-none text-comma-neutral-600" v-html="detail.description_en" />
                                 </div>
                             </div>
                             <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
@@ -559,9 +556,11 @@
 </template>
 
 <script setup lang="ts">
+import RichEditor from '~/components/admin/RichEditor.vue'
 import { useProjectsStore } from '~/store/projects'
 import type { Project, ProjectSection, ProjectDetail, ProjectDetailItem } from '~/types/project'
 import { useNotificationStore } from '~/store/notification'
+import { stripHtml } from '~/utils/stripHtml'
 
 
 

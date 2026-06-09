@@ -16,9 +16,10 @@
                         <h1 class="mb-4 font-display text-4xl font-bold md:text-5xl lg:text-6xl">
                             {{ projectTitle }}
                         </h1>
-                        <p class="max-w-2xl text-lg leading-relaxed text-white/90 md:text-xl">
-                            {{ projectDescription }}
-                        </p>
+                        <div
+                            class="prose prose-invert max-w-2xl text-lg leading-relaxed text-white/90 md:text-xl"
+                            v-html="projectDescription"
+                        />
                     </div>
 
                     <div class="rounded-xl bg-white p-5 shadow-2xl lg:p-6">
@@ -40,9 +41,10 @@
                         <h2 class="text-3xl md:text-4xl font-display font-bold text-comma-neutral-900 mb-4">
                             {{ firstSectionTitle }}
                         </h2>
-                        <p class="text-comma-neutral-600 text-lg leading-relaxed">
-                            {{ firstSectionDescription }}
-                        </p>
+                        <div
+                            class="prose prose-lg max-w-none text-comma-neutral-600"
+                            v-html="firstSectionDescription"
+                        />
                     </div>
                 </div>
                 <div class="w-full h-[500px] lg:h-[600px] overflow-hidden">
@@ -77,9 +79,10 @@
                         <h2 class="text-3xl md:text-4xl font-display font-bold text-comma-neutral-900 mb-4">
                             {{ secondSectionTitle }}
                         </h2>
-                        <p class="text-comma-neutral-600 text-lg leading-relaxed">
-                            {{ secondSectionDescription }}
-                        </p>
+                        <div
+                            class="prose prose-lg max-w-none text-comma-neutral-600"
+                            v-html="secondSectionDescription"
+                        />
                     </div>
                 </div>
                 <div class="w-full h-[500px] lg:h-[600px] overflow-hidden">
@@ -111,9 +114,10 @@
                             <h3 class="text-2xl font-bold text-comma-neutral-900 mb-3">
                                 {{ locale === 'ar' ? detail.title_ar : detail.title_en }}
                             </h3>
-                            <p class="text-comma-neutral-600 leading-relaxed mb-6">
-                                {{ locale === 'ar' ? detail.description_ar : detail.description_en }}
-                            </p>
+                            <div
+                                class="prose max-w-none text-comma-neutral-600 leading-relaxed mb-6"
+                                v-html="locale === 'ar' ? detail.description_ar : detail.description_en"
+                            />
                             <div v-if="detail.items && detail.items.length" class="space-y-3">
                                 <h4 class="text-lg font-semibold text-comma-neutral-800">
                                     {{ $t('projects_page.highlights') || 'Highlights' }}
@@ -180,6 +184,7 @@
 <script setup lang="ts">
 import { useProjectsStore } from '~/store/projects'
 import type { Project } from '~/types/project'
+import { stripHtml } from '~/utils/stripHtml'
 
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation, Pagination, Autoplay } from 'swiper/modules'
@@ -283,7 +288,7 @@ useHead(() => {
     return {
         title: `${projectTitle.value} | Comma Real Estate`,
         meta: [
-            { name: 'description', content: projectDescription.value?.slice(0, 160) }
+            { name: 'description', content: stripHtml(projectDescription.value).slice(0, 160) }
         ]
     }
 })

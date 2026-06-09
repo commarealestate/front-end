@@ -869,6 +869,9 @@
   "properties_section": {
     "view_all": "عرض جميع المشاريع"
   },
+  "common": {
+    "loading": "جاري التحميل..."
+  },
   "nav": {
     "home": "الرئيسية",
     "properties": "عقارات",

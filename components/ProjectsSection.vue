@@ -62,7 +62,7 @@
               {{ getProjectTitle(projects[currentSlide]) }}
             </h3>
             <p class="mb-8 max-w-2xl text-base leading-relaxed text-white/90 sm:text-lg lg:text-xl">
-              {{ getProjectDescription(projects[currentSlide]) }}
+              {{ stripHtml(getProjectDescription(projects[currentSlide])) }}
             </p>
             <NuxtLink
               :to="localePath(`/projects/${projects[currentSlide].project_id}-${projects[currentSlide].slug}`)"
@@ -126,6 +126,7 @@
 <script setup lang="ts">
 import type { Project } from '~/types/project'
 import { useProjectsStore } from '~/store/projects'
+import { stripHtml } from '~/utils/stripHtml'
 
 const { locale } = useI18n()
 const localePath = useLocalePath()

@@ -67,18 +67,20 @@
                             </select>
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-comma-neutral-800 mb-1">{{
+                            <label class="block text-sm font-medium text-comma-neutral-800 mb-2">{{
                                 $t('admin.projects.description_en') }}</label>
-                            <textarea v-model="form.description_en" rows="3"
-                                class="w-full border border-comma-border-subtle rounded-xl px-4 py-2.5"
-                                placeholder="Brief description of the project..."></textarea>
+                            <RichEditor
+                                v-model="form.description_en"
+                                placeholder="Brief description of the project..."
+                            />
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-comma-neutral-800 mb-1">{{
+                            <label class="block text-sm font-medium text-comma-neutral-800 mb-2">{{
                                 $t('admin.projects.description_ar') }}</label>
-                            <textarea v-model="form.description_ar" rows="3"
-                                class="w-full border border-comma-border-subtle rounded-xl px-4 py-2.5"
-                                placeholder="وصف مختصر للمشروع..."></textarea>
+                            <RichEditor
+                                v-model="form.description_ar"
+                                placeholder="وصف مختصر للمشروع..."
+                            />
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-comma-neutral-800 mb-1">{{
@@ -154,6 +156,7 @@
 </template>
 
 <script setup lang="ts">
+import RichEditor from '~/components/admin/RichEditor.vue'
 import { useProjectsStore } from '~/store/projects'
 
 

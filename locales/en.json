@@ -878,6 +878,9 @@
       }
     }
   },
+  "common": {
+    "loading": "Loading..."
+  },
   "nav": {
     "home": "Home",
     "properties": "Properties",

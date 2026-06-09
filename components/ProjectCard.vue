@@ -1,7 +1,7 @@
 <template>
     <div
         class="group bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-luxury transition-all duration-500 hover:-translate-y-1 border border-comma-border-subtle flex flex-col h-full">
-        <NuxtLink :to="`/projects/${project.project_id}-${project.slug}`"
+        <NuxtLink :to="projectPath"
             class="block relative h-64 overflow-hidden bg-comma-neutral-200 flex-shrink-0">
             <img :src="coverImage" :alt="projectTitle"
                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -23,13 +23,13 @@
                 {{ projectTitle }}
             </h3>
             <p class="text-comma-neutral-600 text-sm line-clamp-3 mb-4">
-                {{ projectDescription }}
+                {{ plainProjectDescription }}
             </p>
             <div class="mt-auto pt-4">
-                <NuxtLink :to="`/projects/${project.project_id}-${project.slug}`"
+                <NuxtLink :to="projectPath"
                     class="inline-flex items-center gap-2 text-comma-primary font-medium hover:gap-3 transition-all">
                     {{ $t('projects_page.view_details') || 'View Details' }}
-                    <Icon name="mdi:arrow-right" class="w-4 h-4" />
+                    <Icon name="mdi:arrow-right" class="w-4 h-4" :class="{ 'rotate-180': locale === 'ar' }" />
                 </NuxtLink>
             </div>
         </div>
@@ -38,12 +38,18 @@
 
 <script setup lang="ts">
 import type { Project } from '~/types/project'
+import { stripHtml } from '~/utils/stripHtml'
 
 const props = defineProps<{
     project: Project
 }>()
 
 const { locale } = useI18n()
+const localePath = useLocalePath()
+
+const projectPath = computed(() =>
+    localePath(`/projects/${props.project.project_id}-${props.project.slug}`),
+)
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&fit=crop'
 
@@ -54,6 +60,8 @@ const projectTitle = computed(() => {
 const projectDescription = computed(() => {
     return locale.value === 'ar' ? props.project.description_ar : props.project.description_en
 })
+
+const plainProjectDescription = computed(() => stripHtml(projectDescription.value))
 
 const projectBadge = computed(() => {
     return locale.value === 'ar' ? props.project.badge_ar : props.project.badge_en
