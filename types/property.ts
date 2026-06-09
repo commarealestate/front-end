@@ -84,6 +84,7 @@ export interface RawApiProperty {
   approval_status?: string | null;
   listing_category?: string;
   attribute_groups?: PropertyAttributeGroup[];
+  agent?: Record<string, any> | null;
 }
 
 export interface PaymentScheduleItem {
@@ -181,6 +182,7 @@ export interface NormalizedProperty {
   approvalStatus?: string | null;
   listingCategory?: string;
   attributeGroups: PropertyAttributeGroup[];
+  linkedAgent?: Record<string, any> | null;
 }
 
 export interface PropertyAttributeField {

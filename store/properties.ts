@@ -51,6 +51,33 @@ function normalizePropertyType(value: any): string {
   return textValue(value).toLowerCase().replace(/\s+/g, "_");
 }
 
+function asAgentPhotoArray(value: any): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item) => typeof item === "string" && item);
+  }
+  if (typeof value === "string" && value) return [value];
+  return [];
+}
+
+export function normalizePropertyAgent(raw: any) {
+  if (!raw || typeof raw !== "object") return null;
+
+  const personalPhoto = asAgentPhotoArray(raw.personal_photo);
+  const legacyPhoto = asAgentPhotoArray(raw.photo);
+  const photo = legacyPhoto.length ? legacyPhoto : personalPhoto;
+
+  return {
+    ...raw,
+    agent_id: raw.agent_id ?? raw.id,
+    photo,
+    personal_photo: personalPhoto.length ? personalPhoto : photo,
+    e_mail: raw.e_mail || raw.email || "",
+    email: raw.email || raw.e_mail || "",
+    personal_mobile:
+      raw.personal_mobile || raw.personal_phone || raw.work_phone || raw.uf_phone_inner || "",
+  };
+}
+
 function propertyTypeQueryVariants(value: any): string[] {
   const raw = textValue(value);
   if (!raw) return [];
@@ -242,6 +269,7 @@ function normalizeApiProperty(raw: RawApiProperty): NormalizedProperty {
     approvalStatus: raw.approval_status,
     listingCategory: raw.listing_category || "",
     attributeGroups: Array.isArray(raw.attribute_groups) ? raw.attribute_groups : [],
+    linkedAgent: normalizePropertyAgent(raw.agent),
   };
 }
 
@@ -486,7 +514,7 @@ export const usePropertiesStore = defineStore("properties", {
           throw new Error(response.message || "Agent not found");
         }
 
-        return response.data;
+        return normalizePropertyAgent(response.data);
       } catch (err: any) {
         this.agentsError = err.message;
         throw err;

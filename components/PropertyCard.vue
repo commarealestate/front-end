@@ -41,7 +41,7 @@
       </div>
 
       <!-- Key specs in a compact row -->
-      <div class="grid grid-cols-3 gap-2 text-xs text-comma-neutral-700 mb-4">
+      <div class="grid grid-cols-2 gap-2 text-xs text-comma-neutral-700 mb-4">
         <div class="flex items-center gap-1">
           <Icon name="mdi:bed" class="w-4 h-4 text-comma-primary" />
           <span>{{ property.bedroom ?? 0 }} {{ $t('properties_page.beds') }}</span>
@@ -49,10 +49,6 @@
         <div class="flex items-center gap-1">
           <Icon name="mdi:shower" class="w-4 h-4 text-comma-primary" />
           <span>{{ property.bathroom ?? 0 }} {{ $t('properties_page.baths') }}</span>
-        </div>
-        <div class="flex items-center gap-1">
-          <Icon name="mdi:arrow-expand" class="w-4 h-4 text-comma-primary" />
-          <span>{{ propertySize }}</span>
         </div>
       </div>
 
@@ -108,11 +104,6 @@ const propertySlug = computed(() => String(props.property.titleEnglish || props.
   .toLowerCase()
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-+|-+$/g, ''))
-
-const propertySize = computed(() => {
-  const size = props.property.buildUpAreaSqft || props.property.totalAreaSqft
-  return size ? `${Math.round(Number(size)).toLocaleString()} sqft` : '—'
-})
 
 const hasValidData = computed(() => props.property.price != null)
 

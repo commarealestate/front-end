@@ -21,7 +21,7 @@ function agentId(agent: Partial<Agent>) {
 }
 
 function isWebsiteVisible(agent: Agent) {
-  return agent.show_on_website === "Yes" || agent.show_on_website === "1" || agent.show_on_website === true;
+  return agent.active !== false && agent.active !== 0 && agent.active !== "0";
 }
 
 function normalizeMediaUrl(value: string) {
@@ -263,6 +263,7 @@ export const useAgentsStore = defineStore("agents", {
     async toggleActive(id: number | string, active: boolean) {
       const formData = new FormData();
       formData.append("active", active ? "1" : "0");
+      formData.append("show_on_website", active ? "Yes" : "No");
       formData.append("_method", "patch");
       try {
         const { data, error } = await useApiFetch(
@@ -280,6 +281,7 @@ export const useAgentsStore = defineStore("agents", {
         const index = this.agents.findIndex((agent) => agentId(agent) === Number(id));
         if (index !== -1) {
           this.agents[index].active = active;
+          this.agents[index].show_on_website = active ? "Yes" : "No";
         }
         useNotificationStore().success("Status Updated", `Agent ${active ? "activated" : "deactivated"}`);
         return result;

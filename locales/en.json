@@ -118,6 +118,9 @@
   "Transaction Value": "Transaction Value",
   "Expert Advisors": "Expert Advisors",
   "properties_section_label": "Comma Real Estate",
+  "properties_section": {
+    "view_all": "View All Projects"
+  },
   "properties_title": "Our Latest Properties",
   "properties_description": "Discover our carefully curated selection of premium residential, commercial, and investment properties. Each property reflects our commitment to quality and value.",
   "featured": "Featured",
@@ -580,7 +583,8 @@
       "experience": "Most Experienced",
       "rating": "Highest Rated",
       "properties": "Most Properties",
-      "name": "Name (A-Z)"
+      "name": "Name (A-Z)",
+      "recent": "Most Recent"
     },
     "premium": "Premium",
     "properties": "Properties",
@@ -782,6 +786,14 @@
     }
   },
   "home": {
+    "projects_section": {
+      "label": "Projects",
+      "title": "Our Projects",
+      "view_all": "View All Projects",
+      "prev": "Previous project",
+      "next": "Next project",
+      "slide_indicator": "Go to project {number}"
+    },
     "properties_section": {
       "label": "Properties",
       "title": "Featured Properties",

@@ -75,12 +75,6 @@
               <UFormGroup label="Display Order" name="display_order" :error="fieldError('display_order')">
                 <UInput v-model="form.display_order" type="number" min="0" placeholder="Lower numbers appear first" />
               </UFormGroup>
-              <UFormGroup label="Show On Website" name="show_on_website" :error="fieldError('show_on_website')">
-                <UToggle v-model="form.show_on_website" />
-              </UFormGroup>
-              <UFormGroup label="Active" name="active" :error="fieldError('active')">
-                <UToggle v-model="form.active" />
-              </UFormGroup>
               <UFormGroup label="Personal Notes" name="personal_notes" :error="fieldError('personal_notes')" class="md:col-span-2">
                 <UTextarea v-model="form.personal_notes" :rows="3" />
               </UFormGroup>
@@ -459,8 +453,6 @@ const fieldLabels: Record<string, string> = {
   cre: 'CRE ID',
   website_level: 'Website Level',
   display_order: 'Display Order',
-  show_on_website: 'Show On Website',
-  active: 'Active',
   work_position: 'Work Position',
   work_company: 'Work Company',
   work_department: 'Work Department',
@@ -729,8 +721,8 @@ async function handleSubmit() {
     formData.set('e_mail', form.email)
     formData.set('website_level', form.website_level || '')
     formData.set('display_order', form.display_order === '' ? '' : String(form.display_order))
-    formData.set('show_on_website', form.show_on_website ? 'Yes' : 'No')
     formData.set('active', form.active ? '1' : '0')
+    formData.set('show_on_website', form.active ? 'Yes' : 'No')
     // Append service areas as array
     selectedServiceAreas.value.forEach((id, idx) => {
       formData.append(`service_area_ids[${idx}]`, String(id))

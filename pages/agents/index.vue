@@ -34,7 +34,7 @@
         <div class="flex flex-col lg:flex-row gap-8">
           <!-- Desktop Sidebar Filter -->
           <aside class="hidden lg:block lg:w-1/4">
-            <div class="sticky top-32 bg-white rounded-2xl shadow-card p-6 border border-comma-border-subtle">
+            <div class="sticky top-32 max-h-[calc(100vh-9rem)] overflow-y-auto bg-white rounded-2xl shadow-card p-6 border border-comma-border-subtle">
               <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold text-comma-neutral-900 font-display">{{ $t('agents_page.filter_agents') }}
                 </h3>
@@ -61,27 +61,24 @@
                   class="w-full px-4 py-3 rounded-xl border border-comma-border-subtle focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20 outline-none transition-all duration-300 bg-white" />
               </div>
 
-              <!-- Active Status Filter -->
-              <div class="mb-8">
+              <!-- Specialty Filter -->
+              <div v-if="uniqueSpecialties.length" class="mb-8">
                 <h4 class="text-sm font-semibold text-comma-neutral-900 mb-3 flex items-center gap-2">
-                  <Icon name="mdi:check-circle" class="w-4 h-4 text-comma-primary" />
-                  {{ $t('agents_page.status') }}
+                  <Icon name="mdi:briefcase" class="w-4 h-4 text-comma-primary" />
+                  {{ $t('agents_page.specialty') }}
                 </h4>
-                <div class="space-y-2">
+                <div class="space-y-2 max-h-48 overflow-y-auto pr-2">
                   <label
-                    class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 cursor-pointer">
-                    <input type="radio" v-model="activeFilter" :value="null" class="w-4 h-4 text-comma-primary" />
-                    <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.all') }}</span>
+                    class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 cursor-pointer"
+                    :class="{ 'border-comma-primary bg-comma-primary/10': !selectedSpecialty }">
+                    <input type="radio" v-model="selectedSpecialty" value="" class="w-4 h-4 text-comma-primary" />
+                    <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.all_specialties') }}</span>
                   </label>
-                  <label
-                    class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 cursor-pointer">
-                    <input type="radio" v-model="activeFilter" :value="true" class="w-4 h-4 text-comma-primary" />
-                    <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.active') }}</span>
-                  </label>
-                  <label
-                    class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 cursor-pointer">
-                    <input type="radio" v-model="activeFilter" :value="false" class="w-4 h-4 text-comma-primary" />
-                    <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.inactive') }}</span>
+                  <label v-for="specialty in uniqueSpecialties" :key="specialty"
+                    class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 cursor-pointer"
+                    :class="{ 'border-comma-primary bg-comma-primary/10': selectedSpecialty === specialty }">
+                    <input type="radio" v-model="selectedSpecialty" :value="specialty" class="w-4 h-4 text-comma-primary" />
+                    <span class="text-sm text-comma-neutral-700">{{ specialty }}</span>
                   </label>
                 </div>
               </div>
@@ -93,16 +90,17 @@
                   {{ $t('agents_page.service_areas') }}
                 </h4>
                 <div class="space-y-2 max-h-48 overflow-y-auto pr-2">
-                  <label v-for="area in uniqueServiceAreas" :key="area"
+                  <label
+                    class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 cursor-pointer"
+                    :class="{ 'border-comma-primary bg-comma-primary/10': !selectedArea }">
+                    <input type="radio" v-model="selectedArea" value="" class="w-4 h-4 text-comma-primary" />
+                    <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.all_areas') }}</span>
+                  </label>
+                  <label v-for="area in serviceAreaOptions" :key="area"
                     class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 cursor-pointer"
                     :class="{ 'border-comma-primary bg-comma-primary/10': selectedArea === area }">
                     <input type="radio" v-model="selectedArea" :value="area" class="w-4 h-4 text-comma-primary" />
                     <span class="text-sm text-comma-neutral-700">{{ area }}</span>
-                  </label>
-                  <label
-                    class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 cursor-pointer">
-                    <input type="radio" v-model="selectedArea" value="" class="w-4 h-4 text-comma-primary" />
-                    <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.all_areas') }}</span>
                   </label>
                 </div>
               </div>
@@ -114,10 +112,6 @@
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-comma-neutral-600">{{ $t('agents_page.total_agents') }}</span>
                     <span class="font-semibold text-comma-neutral-900">{{ store.visibleAgents.length }}</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm text-comma-neutral-600">{{ $t('agents_page.active_agents') }}</span>
-                    <span class="font-semibold text-comma-neutral-900">{{ activeCount }}</span>
                   </div>
                 </div>
               </div>
@@ -384,24 +378,21 @@
               class="w-full px-4 py-3 rounded-xl border border-comma-border-subtle focus:border-comma-primary focus:ring-2 focus:ring-comma-primary/20 outline-none" />
           </div>
 
-          <!-- Active Status -->
-          <div>
-            <h4 class="text-sm font-semibold text-comma-neutral-900 mb-3">{{ $t('agents_page.status') }}</h4>
-            <div class="space-y-2">
+          <!-- Specialty -->
+          <div v-if="uniqueSpecialties.length">
+            <h4 class="text-sm font-semibold text-comma-neutral-900 mb-3">{{ $t('agents_page.specialty') }}</h4>
+            <div class="space-y-2 max-h-40 overflow-y-auto pr-2">
               <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 cursor-pointer">
-                <input type="radio" v-model="activeFilter" :value="null" class="w-4 h-4 text-comma-primary" />
-                <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.all') }}</span>
+                class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 cursor-pointer"
+                :class="{ 'border-comma-primary bg-comma-primary/10': !selectedSpecialty }">
+                <input type="radio" v-model="selectedSpecialty" value="" class="w-4 h-4 text-comma-primary" />
+                <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.all_specialties') }}</span>
               </label>
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 cursor-pointer">
-                <input type="radio" v-model="activeFilter" :value="true" class="w-4 h-4 text-comma-primary" />
-                <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.active') }}</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 cursor-pointer">
-                <input type="radio" v-model="activeFilter" :value="false" class="w-4 h-4 text-comma-primary" />
-                <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.inactive') }}</span>
+              <label v-for="specialty in uniqueSpecialties" :key="specialty"
+                class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 cursor-pointer"
+                :class="{ 'border-comma-primary bg-comma-primary/10': selectedSpecialty === specialty }">
+                <input type="radio" v-model="selectedSpecialty" :value="specialty" class="w-4 h-4 text-comma-primary" />
+                <span class="text-sm text-comma-neutral-700">{{ specialty }}</span>
               </label>
             </div>
           </div>
@@ -410,16 +401,17 @@
           <div>
             <h4 class="text-sm font-semibold text-comma-neutral-900 mb-3">{{ $t('agents_page.service_areas') }}</h4>
             <div class="space-y-2 max-h-40 overflow-y-auto pr-2">
-              <label v-for="area in uniqueServiceAreas" :key="area"
+              <label
+                class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 cursor-pointer"
+                :class="{ 'border-comma-primary bg-comma-primary/10': !selectedArea }">
+                <input type="radio" v-model="selectedArea" value="" class="w-4 h-4 text-comma-primary" />
+                <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.all_areas') }}</span>
+              </label>
+              <label v-for="area in serviceAreaOptions" :key="area"
                 class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 cursor-pointer"
                 :class="{ 'border-comma-primary bg-comma-primary/10': selectedArea === area }">
                 <input type="radio" v-model="selectedArea" :value="area" class="w-4 h-4 text-comma-primary" />
                 <span class="text-sm text-comma-neutral-700">{{ area }}</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 cursor-pointer">
-                <input type="radio" v-model="selectedArea" value="" class="w-4 h-4 text-comma-primary" />
-                <span class="text-sm text-comma-neutral-700">{{ $t('agents_page.all_areas') }}</span>
               </label>
             </div>
           </div>
@@ -458,14 +450,14 @@ const propertiesStore = usePropertiesStore()
 
 // Fetch data on mount
 onMounted(async () => {
-  await store.fetchAgents({ per_page: 100 })
+  await store.fetchAgents({ per_page: 100, active: 1 })
   await store.fetchServiceAreas()
   await propertiesStore.fetchProperties({ per_page: 3, sort_by: 'created_at', sort_direction: 'desc' })
 })
 
 // Filters state
 const searchQuery = ref('')
-const activeFilter = ref<boolean | null>(null)
+const selectedSpecialty = ref('')
 const selectedArea = ref('')
 const sortBy = ref('priority')
 const isFilterOpen = ref(false)
@@ -498,16 +490,41 @@ function experience(agent: Agent): number {
   return Math.max(0, now.getFullYear() - start.getFullYear())
 }
 
-// Unique service area names (localized) from visible agents only
-const uniqueServiceAreas = computed(() => {
+function localizedServiceAreaName(area: { name?: string; name_ar?: string; name_en?: string }): string {
+  return locale.value === 'ar'
+    ? (area.name_ar || area.name_en || area.name || '')
+    : (area.name_en || area.name_ar || area.name || '')
+}
+
+const serviceAreaOptions = computed(() => {
   const areasSet = new Set<string>()
+
+  store.serviceAreas.forEach((area) => {
+    const name = localizedServiceAreaName(area)
+    if (name) areasSet.add(name)
+  })
+
   store.visibleAgents.forEach((agent) => {
     agent.service_areas?.forEach((area) => {
-      const name = locale.value === 'ar' ? area.name_ar : area.name_en
+      const name = localizedServiceAreaName(area)
       if (name) areasSet.add(name)
     })
   })
+
   return Array.from(areasSet).sort()
+})
+
+const uniqueSpecialties = computed(() => {
+  const specialtiesSet = new Set<string>()
+  store.visibleAgents.forEach((agent) => {
+    const raw = agent.specialties || agent.personal_profession || agent.agent_type || ''
+    String(raw)
+      .split(/[,;|]/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .forEach((item) => specialtiesSet.add(item))
+  })
+  return Array.from(specialtiesSet).sort()
 })
 
 // Filtered agents (only visible)
@@ -519,15 +536,17 @@ const filteredAgents = computed(() => {
     filtered = filtered.filter((agent) => fullName(agent).toLowerCase().includes(q))
   }
 
-  if (activeFilter.value !== null) {
-    filtered = filtered.filter((agent) => agent.active === activeFilter.value)
+  if (selectedSpecialty.value) {
+    filtered = filtered.filter((agent) => {
+      const raw = `${agent.specialties || ''} ${agent.personal_profession || ''} ${agent.agent_type || ''}`.toLowerCase()
+      return raw.includes(selectedSpecialty.value.toLowerCase())
+    })
   }
 
   if (selectedArea.value) {
     filtered = filtered.filter((agent) =>
-      agent.service_areas?.some(
-        (area) => (locale.value === 'ar' ? area.name_ar : area.name_en) === selectedArea.value,
-      ),
+      agent.service_areas?.some((area) => localizedServiceAreaName(area) === selectedArea.value)
+      || localizedServiceAreaName({ name: agent.service_area }) === selectedArea.value,
     )
   }
 
@@ -609,12 +628,10 @@ const groupedAgentSections = computed(() => {
     .filter((section) => section.agents.length > 0)
 })
 
-const activeCount = computed(() => store.visibleAgents.filter((a) => a.active).length)
-
 // Reset all filters
 function resetFilters() {
   searchQuery.value = ''
-  activeFilter.value = null
+  selectedSpecialty.value = ''
   selectedArea.value = ''
   sortBy.value = 'priority'
   isFilterOpen.value = false

@@ -68,49 +68,33 @@
                 </div>
               </div>
 
-              <!-- Features Grid -->
-              <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-8 pt-6 border-t border-comma-border-subtle">
-                <div class="text-center group">
-                  <div
-                    class="w-12 h-12 mx-auto bg-comma-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:bg-comma-primary/20 transition-colors">
-                    <Icon name="mdi:bed" class="w-6 h-6 text-comma-primary" />
+              <!-- Quick Stats: bedrooms, bathrooms, parking -->
+              <div class="mt-8 pt-6 border-t border-comma-border-subtle">
+                <div class="grid grid-cols-3 gap-4 sm:gap-8 max-w-xl mx-auto">
+                  <div class="text-center group">
+                    <div
+                      class="w-12 h-12 mx-auto bg-comma-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:bg-comma-primary/20 transition-colors">
+                      <Icon name="mdi:bed" class="w-6 h-6 text-comma-primary" />
+                    </div>
+                    <div class="text-xl font-bold text-comma-neutral-900">{{ property.bedroom ?? 0 }}</div>
+                    <div class="text-xs text-comma-neutral-600">{{ $t('property_page.bedrooms') }}</div>
                   </div>
-                  <div class="text-xl font-bold text-comma-neutral-900">{{ property.bedroom ?? 0 }}</div>
-                  <div class="text-xs text-comma-neutral-600">{{ $t('property_page.bedrooms') }}</div>
-                </div>
-                <div class="text-center group">
-                  <div
-                    class="w-12 h-12 mx-auto bg-comma-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:bg-comma-primary/20 transition-colors">
-                    <Icon name="mdi:shower" class="w-6 h-6 text-comma-primary" />
+                  <div class="text-center group">
+                    <div
+                      class="w-12 h-12 mx-auto bg-comma-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:bg-comma-primary/20 transition-colors">
+                      <Icon name="mdi:shower" class="w-6 h-6 text-comma-primary" />
+                    </div>
+                    <div class="text-xl font-bold text-comma-neutral-900">{{ property.bathroom ?? 0 }}</div>
+                    <div class="text-xs text-comma-neutral-600">{{ $t('property_page.bathrooms') }}</div>
                   </div>
-                  <div class="text-xl font-bold text-comma-neutral-900">{{ property.bathroom ?? 0 }}</div>
-                  <div class="text-xs text-comma-neutral-600">{{ $t('property_page.bathrooms') }}</div>
-                </div>
-                <div class="text-center group">
-                  <div
-                    class="w-12 h-12 mx-auto bg-comma-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:bg-comma-primary/20 transition-colors">
-                    <Icon name="mdi:arrow-expand" class="w-6 h-6 text-comma-primary" />
+                  <div class="text-center group">
+                    <div
+                      class="w-12 h-12 mx-auto bg-comma-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:bg-comma-primary/20 transition-colors">
+                      <Icon name="mdi:car" class="w-6 h-6 text-comma-primary" />
+                    </div>
+                    <div class="text-xl font-bold text-comma-neutral-900">{{ property.parking || $t('property_page.na') }}</div>
+                    <div class="text-xs text-comma-neutral-600">{{ $t('property_page.parking') }}</div>
                   </div>
-                  <div class="text-xl font-bold text-comma-neutral-900">{{ propertySize }} sqft</div>
-                  <div class="text-xs text-comma-neutral-600">{{ $t('property_page.size') }}</div>
-                </div>
-                <div class="text-center group">
-                  <div
-                    class="w-12 h-12 mx-auto bg-comma-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:bg-comma-primary/20 transition-colors">
-                    <Icon name="mdi:car" class="w-6 h-6 text-comma-primary" />
-                  </div>
-                  <div class="text-xl font-bold text-comma-neutral-900">{{ property.parking || $t('property_page.na')
-                  }}</div>
-                  <div class="text-xs text-comma-neutral-600">{{ $t('property_page.parking') }}</div>
-                </div>
-                <div class="text-center group">
-                  <div
-                    class="w-12 h-12 mx-auto bg-comma-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:bg-comma-primary/20 transition-colors">
-                    <Icon name="mdi:calendar" class="w-6 h-6 text-comma-primary" />
-                  </div>
-                  <div class="text-xl font-bold text-comma-neutral-900">{{ property.buildYear || $t('property_page.na')
-                  }}</div>
-                  <div class="text-xs text-comma-neutral-600">{{ $t('property_page.year_built') }}</div>
                 </div>
               </div>
             </div>
@@ -301,8 +285,8 @@
               <h3 class="text-xl font-bold text-comma-neutral-900 mb-5 font-display">{{
                 $t('property_page.contact_agent') }}</h3>
 
-              <!-- Agent Info (dynamic) -->
-              <div v-if="agent && agent.show_on_website === 'Yes'"
+              <!-- Agent Info (linked to property listing agent) -->
+              <div v-if="hasLinkedAgent"
                 class="flex items-center gap-4 mb-6 pb-6 border-b border-comma-border-subtle">
                 <div
                   class="w-16 h-16 rounded-full overflow-hidden bg-comma-primary/10 flex items-center justify-center">
@@ -313,7 +297,7 @@
                 </div>
                 <div>
                   <p class="font-bold text-lg text-comma-neutral-900">{{ agentName }}</p>
-                  <p v-if="agent.position" class="text-sm text-comma-neutral-600">{{ agent.position }}</p>
+                  <p v-if="agentJobTitle" class="text-sm text-comma-neutral-600">{{ agentJobTitle }}</p>
                   <p v-if="agent.departments?.length" class="text-xs text-comma-neutral-500">{{
                     agent.departments.join(', ') }}</p>
                 </div>
@@ -332,7 +316,7 @@
 
               <!-- Contact Methods -->
               <div class="space-y-2.5">
-                <a :href="`tel:${defaultPhone}`"
+                <a v-if="contactPhone" :href="`tel:${contactPhone}`"
                   class="flex items-center gap-3 p-3 rounded-xl border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition group">
                   <div
                     class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary/20 transition">
@@ -340,10 +324,10 @@
                   </div>
                   <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.call') }}</div>
-                    <div class="font-medium text-comma-neutral-900"><span dir="ltr">{{ defaultPhone }}</span></div>
+                    <div class="font-medium text-comma-neutral-900"><span dir="ltr">{{ contactPhoneDisplay }}</span></div>
                   </div>
                 </a>
-                <a :href="`mailto:${contactEmail}`"
+                <a v-if="contactEmail" :href="`mailto:${contactEmail}`"
                   class="flex items-center gap-3 p-3 rounded-xl border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition group">
                   <div
                     class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary/20 transition">
@@ -354,7 +338,7 @@
                     <div class="truncate font-medium text-comma-neutral-900">{{ contactEmail }}</div>
                   </div>
                 </a>
-                <a :href="`https://wa.me/${defaultWhatsapp}`" target="_blank"
+                <a v-if="contactWhatsapp" :href="`https://wa.me/${contactWhatsapp}`" target="_blank"
                   class="flex items-center gap-3 p-3 rounded-xl border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition group">
                   <div
                     class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary/20 transition">
@@ -362,7 +346,7 @@
                   </div>
                   <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.whatsapp') }}</div>
-                    <div class="font-medium text-comma-neutral-900"><span dir="ltr">+{{ defaultWhatsapp }}</span></div>
+                    <div class="font-medium text-comma-neutral-900"><span dir="ltr">{{ contactWhatsappDisplay }}</span></div>
                   </div>
                 </a>
               </div>
@@ -541,12 +525,6 @@ const shareErrorLabel = computed(() => {
   return locale.value === 'ar' ? 'تعذر مشاركة الرابط' : 'Could not share the link'
 })
 
-const propertySize = computed(() => {
-  if (!property.value) return '-'
-  const size = property.value.buildUpAreaSqft || property.value.totalAreaSqft
-  return size ? Math.round(Number(size)).toLocaleString() : '-'
-})
-
 const heroImage = computed(() => {
   if (property.value?.coverImage) return property.value.coverImage
   if (property.value?.propertyPhotos?.length) return property.value.propertyPhotos[0]
@@ -570,25 +548,59 @@ const floorPlanImages = computed(() => {
 })
 
 // Agent display helpers
+const hasLinkedAgent = computed(() => Boolean(agent.value))
+
 const agentName = computed(() => {
-  if (agent.value) {
-    return `${agent.value.first_name || ''} ${agent.value.last_name || ''}`.trim()
-  }
-  return ''
+  if (!agent.value) return ''
+  const parts = [
+    agent.value.first_name || agent.value.name,
+    agent.value.second_name || agent.value.middle_name,
+    agent.value.last_name,
+  ].filter(Boolean)
+  return parts.join(' ').trim()
+})
+
+const agentJobTitle = computed(() => {
+  if (!agent.value) return ''
+  return agent.value.position || agent.value.personal_profession || agent.value.title || ''
 })
 
 const agentPhoto = computed(() => {
-  if (agent.value && agent.value.photo && agent.value.photo.length) {
-    return agent.value.photo[0]
-  }
-  return ''
+  if (!agent.value) return ''
+  const photos = agent.value.photo || agent.value.personal_photo || []
+  return photos.length ? photos[0] : ''
 })
 
+function digitsOnly(value: string): string {
+  return value.replace(/\D/g, '')
+}
+
 const contactEmail = computed(() => {
-  if (agent.value && agent.value.show_on_website === 'Yes') {
-    return agent.value.company_e_mail || agent.value.e_mail || defaultEmail
+  if (agent.value) {
+    return agent.value.e_mail || agent.value.email || agent.value.company_e_mail || ''
   }
   return defaultEmail
+})
+
+const contactPhone = computed(() => {
+  if (agent.value) {
+    return agent.value.personal_mobile || ''
+  }
+  return defaultPhone
+})
+
+const contactPhoneDisplay = computed(() => contactPhone.value)
+
+const contactWhatsapp = computed(() => {
+  if (agent.value) {
+    return agent.value.personal_mobile ? digitsOnly(agent.value.personal_mobile) : ''
+  }
+  return defaultWhatsapp
+})
+
+const contactWhatsappDisplay = computed(() => {
+  const digits = contactWhatsapp.value
+  return digits ? (digits.startsWith('+') ? digits : `+${digits}`) : ''
 })
 
 // Parsed amenities (split by dash)
@@ -621,14 +633,18 @@ async function fetchProperty() {
       }
       allImages.value = images.length ? images : [FALLBACK_IMAGE]
 
-      // 2. Fetch agent if listing_owner exists and > 0
-      if (fetched.listingOwner && fetched.listingOwner !== 0) {
+      // 2. Use embedded listing agent, or fetch by listing_owner / agent id
+      if (fetched.linkedAgent) {
+        agent.value = fetched.linkedAgent
+      } else if (fetched.listingOwner && fetched.listingOwner !== 0) {
         try {
           agent.value = await store.fetchAgentById(fetched.listingOwner)
         } catch (agentErr) {
           console.warn('Failed to fetch agent:', agentErr)
           agent.value = null
         }
+      } else {
+        agent.value = null
       }
     } else {
       notFound.value = true

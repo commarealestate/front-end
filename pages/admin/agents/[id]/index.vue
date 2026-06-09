@@ -26,9 +26,6 @@
             <span class="px-3 py-1 rounded-full text-sm font-semibold" :class="agent.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
               {{ agent.active ? t('admin_agents_page.active') : t('admin_agents_page.inactive') }}
             </span>
-            <span class="px-3 py-1 rounded-full text-sm font-semibold" :class="isWebsiteVisible ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'">
-              {{ isWebsiteVisible ? 'Visible on website' : 'Hidden from website' }}
-            </span>
             <span v-if="agent.cre" class="px-3 py-1 rounded-full text-sm font-semibold bg-comma-primary/10 text-comma-primary">
               CRE {{ agent.cre }}
             </span>
@@ -160,7 +157,6 @@ const fullName = computed(() => {
 
 const primaryPhoto = computed(() => firstArrayItem(agent.value?.personal_photo) || firstArrayItem(agent.value?.photo))
 const primaryPosition = computed(() => agent.value?.position || agent.value?.work_position || agent.value?.personal_profession || '')
-const isWebsiteVisible = computed(() => agent.value?.show_on_website === 'Yes' || agent.value?.show_on_website === '1' || agent.value?.show_on_website === true)
 const websiteLevelLabel = computed(() => {
   if (agent.value?.website_level === 'higher_management') return 'Level 1 - Higher Management'
   if (agent.value?.website_level === 'management') return 'Level 2 - Management'
@@ -232,7 +228,6 @@ const detailSections = computed(() => {
     {
       title: 'Website Profile',
       fields: [
-        { label: 'Show On Website', value: isWebsiteVisible.value ? 'Yes' : 'No' },
         { label: 'Active', value: a.active ? 'Yes' : 'No' },
         { label: 'CRE', value: a.cre },
         { label: 'Website Level', value: websiteLevelLabel.value },

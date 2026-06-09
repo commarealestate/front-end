@@ -571,7 +571,8 @@
       "experience": "الأكثر خبرة",
       "rating": "الأعلى تقييماً",
       "properties": "أكثر العقارات",
-      "name": "الاسم (أ-ي)"
+      "name": "الاسم (أ-ي)",
+      "recent": "الأحدث"
     },
     "premium": "مميز",
     "properties": "عقار",
@@ -773,6 +774,14 @@
   },
 
   "home": {
+    "projects_section": {
+      "label": "المشاريع",
+      "title": "مشاريعنا",
+      "view_all": "عرض جميع المشاريع",
+      "prev": "المشروع السابق",
+      "next": "المشروع التالي",
+      "slide_indicator": "الانتقال إلى المشروع {number}"
+    },
     "properties_section": {
       "label": "عقارات",
       "title": "عقارات مميزة",
@@ -857,6 +866,9 @@
     }
   },
 
+  "properties_section": {
+    "view_all": "عرض جميع المشاريع"
+  },
   "nav": {
     "home": "الرئيسية",
     "properties": "عقارات",
