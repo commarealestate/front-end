@@ -186,7 +186,7 @@ export const useAgentsStore = defineStore("agents", {
       this.error = null;
       try {
         const { data, error } = await useApiFetch({
-          apiType: "common",
+          apiType: "admin",
           url: `agents/${id}`,
           method: "GET",
         });

@@ -28,3 +28,7 @@ logs
 localhost.pem
 localhost-key.pem
 0.0.0.0
+
+# Local browser automation artifacts
+.chrome-codex-profile/
+.codex-screenshots/

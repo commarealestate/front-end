@@ -87,8 +87,23 @@ export interface Agent {
   abu_dhabi_broker_cert: string | null
   dubai_broker_cert: string | null
   service_areas: ServiceArea[]
+  first_contact_at?: string | null
+  last_activity_at?: string | null
+  activities?: CrmActivity[]
   created_at: string
   updated_at: string
+}
+
+export interface CrmActivity {
+  id: number
+  entity_type: 'agent' | 'contact'
+  entity_id: number
+  activity_type: string
+  occurred_at: string | null
+  notes: string | null
+  created_by?: number | null
+  created_at?: string | null
+  updated_at?: string | null
 }
 
 export interface ServiceArea {

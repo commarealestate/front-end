@@ -102,6 +102,25 @@
     </div>
 
     <section class="bg-white rounded-xl shadow-card border border-comma-border-subtle p-6">
+      <h2 class="text-lg font-semibold text-comma-neutral-900 mb-5">Activity Timeline</h2>
+      <div v-if="agentActivities.length" class="space-y-4">
+        <div v-for="activity in agentActivities" :key="activity.id" class="flex gap-3 border-b border-comma-border-subtle pb-4 last:border-0 last:pb-0">
+          <div class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-comma-primary/10 text-comma-primary">
+            <UIcon name="i-heroicons-clock" class="h-5 w-5" />
+          </div>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <p class="font-medium text-comma-neutral-900">{{ activityLabel(activity.activity_type) }}</p>
+              <span class="text-sm text-comma-neutral-500">{{ formatDate(activity.occurred_at || activity.created_at || '') }}</span>
+            </div>
+            <p v-if="activity.notes" class="mt-1 text-sm text-comma-neutral-600 whitespace-pre-line">{{ activity.notes }}</p>
+          </div>
+        </div>
+      </div>
+      <p v-else class="text-sm text-comma-neutral-500">No activity recorded yet.</p>
+    </section>
+
+    <section class="bg-white rounded-xl shadow-card border border-comma-border-subtle p-6">
       <h2 class="text-lg font-semibold text-comma-neutral-900 mb-5">Service Areas</h2>
       <div v-if="agent.service_areas?.length" class="flex flex-wrap gap-2">
         <span v-for="area in agent.service_areas" :key="area.service_area_id" class="px-3 py-1 bg-comma-primary/10 text-comma-primary rounded-full text-sm">
@@ -259,6 +278,8 @@ const detailSections = computed(() => {
       fields: [
         { label: 'Last Login', value: a.last_login, type: 'date' },
         { label: 'Registered At', value: a.date_register, type: 'date' },
+        { label: 'First Contact', value: a.first_contact_at, type: 'date' },
+        { label: 'Last Activity', value: a.last_activity_at, type: 'date' },
         { label: 'Time Zone', value: a.time_zone },
         { label: 'Created At', value: a.created_at, type: 'date' },
         { label: 'Updated At', value: a.updated_at, type: 'date' },
@@ -266,6 +287,8 @@ const detailSections = computed(() => {
     },
   ]
 })
+
+const agentActivities = computed(() => agent.value?.activities || [])
 
 function isArrayValue(value: unknown): value is unknown[] {
   return Array.isArray(value)
@@ -297,6 +320,23 @@ function formatDate(date: string) {
   const parsed = new Date(date)
   if (Number.isNaN(parsed.getTime())) return date
   return parsed.toLocaleString()
+}
+
+function activityLabel(type: string) {
+  const labels: Record<string, string> = {
+    lead_created: 'Lead Created',
+    whatsapp_sent: 'WhatsApp Sent',
+    call_made: 'Call Made',
+    meeting_scheduled: 'Meeting Scheduled',
+    note: 'Note',
+    status_change: 'Status Change',
+    reply_sent: 'Reply Sent',
+    marked_read: 'Marked Read',
+    agent_created: 'Agent Created',
+    agent_updated: 'Agent Updated',
+  }
+
+  return labels[type] || type
 }
 
 function fileName(value: unknown) {

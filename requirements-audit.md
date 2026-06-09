@@ -108,7 +108,7 @@ Acceptance criteria:
 
 ### 4. Missing Dates / Activity Tracking
 
-Status: `Open`
+Status: `Done`
 
 Requirement:
 - Admin must have visibility for:
@@ -128,25 +128,31 @@ Impact from the requirement:
 - No way to measure response time or follow-ups.
 
 Current implementation notes:
-- Agents already expose `created_at` and `updated_at`.
-- Agents already have some legacy/imported date fields such as `date_register`, `last_login`, and `last_activity_date`.
-- There is no clean CRM activity timeline model yet.
-- There are no dedicated `first_contact_at` or `last_activity_at` fields for agent/lead tracking yet.
+- Agents and contact messages expose `created_at`, `updated_at`, `first_contact_at`, and `last_activity_at`.
+- A dedicated `crm_activities` timeline table exists.
+- Timeline records support:
+  - `lead_created`
+  - `whatsapp_sent`
+  - `call_made`
+  - `meeting_scheduled`
+  - `note`
+  - `status_change`
+  - `reply_sent`
+  - `marked_read`
+  - `agent_created`
+  - `agent_updated`
+- Contact lead creation writes a `lead_created` activity.
+- Admin replies write a `reply_sent` activity.
+- Marking unread contact messages as read writes a `marked_read` activity.
+- Agent creation and update write timeline activities.
+- Existing agents and contact messages are backfilled with tracking dates and initial timeline rows.
+- Admin agent/contact detail pages display tracking dates and the activity timeline.
 
-Planned backend fields:
-- `first_contact_at` nullable timestamp.
-- `last_activity_at` nullable timestamp.
-
-Planned activity timeline model:
-- `id`
-- `entity_type`: lead, contact, project, property, agent.
-- `entity_id`
-- `activity_type`: lead_created, whatsapp_sent, call_made, meeting_scheduled, note, status_change.
-- `occurred_at`
-- `notes`
-- `created_by`
-- `created_at`
-- `updated_at`
+Verification:
+- Tracking migrations ran locally.
+- Authenticated admin API verification passed for agent/contact detail tracking fields and timeline data.
+- Frontend production build passed.
+- Backend syntax checks passed.
 
 Acceptance criteria:
 - Agent/admin detail shows Created Date, First Contact Date, Last Activity, and Last Update.

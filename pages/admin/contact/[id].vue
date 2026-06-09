@@ -6,7 +6,7 @@
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 class="text-2xl font-display font-bold text-comma-neutral-900">
-          {{ $t('admin_contact_page.message_from', { name: message.name }) }}
+          {{ t('admin_contact_page.message_from', { name: message.name }) }}
         </h1>
         <div class="flex gap-2">
           <UButton
@@ -15,20 +15,20 @@
             variant="soft"
             @click="markAsRead"
           >
-            {{ $t('admin_contact_page.mark_read') }}
+            {{ t('admin_contact_page.mark_read') }}
           </UButton>
           <UButton
             color="primary"
             @click="openReplyModal"
           >
-            {{ $t('admin_contact_page.reply') }}
+            {{ t('admin_contact_page.reply') }}
           </UButton>
           <UButton
             color="red"
             variant="outline"
             @click="confirmDelete"
           >
-            {{ $t('admin_contact_page.delete') }}
+            {{ t('admin_contact_page.delete') }}
           </UButton>
         </div>
       </div>
@@ -37,24 +37,36 @@
       <div class="bg-white rounded-2xl shadow-card p-6 lg:p-8">
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <dt class="text-sm text-comma-neutral-600">{{ $t('admin_contact_page.name') }}</dt>
+            <dt class="text-sm text-comma-neutral-600">{{ t('admin_contact_page.name') }}</dt>
             <dd class="font-medium">{{ message.name }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-comma-neutral-600">{{ $t('admin_contact_page.email') }}</dt>
+            <dt class="text-sm text-comma-neutral-600">{{ t('admin_contact_page.email') }}</dt>
             <dd class="font-medium">
               <a :href="`mailto:${message.email}`" class="text-comma-primary hover:underline">{{ message.email }}</a>
             </dd>
           </div>
           <div>
-            <dt class="text-sm text-comma-neutral-600">{{ $t('admin_contact_page.phone') }}</dt>
+            <dt class="text-sm text-comma-neutral-600">{{ t('admin_contact_page.phone') }}</dt>
             <dd class="font-medium">
               <a :href="`tel:${message.phone}`" class="text-comma-primary hover:underline">{{ message.phone }}</a>
             </dd>
           </div>
           <div>
-            <dt class="text-sm text-comma-neutral-600">{{ $t('admin_contact_page.received') }}</dt>
+            <dt class="text-sm text-comma-neutral-600">{{ t('admin_contact_page.received') }}</dt>
             <dd class="font-medium">{{ formatDate(message.created_at) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-comma-neutral-600">First Contact</dt>
+            <dd class="font-medium">{{ formatDate(message.first_contact_at || message.created_at) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-comma-neutral-600">Last Activity</dt>
+            <dd class="font-medium">{{ formatDate(message.last_activity_at || message.updated_at) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-comma-neutral-600">Last Update</dt>
+            <dd class="font-medium">{{ formatDate(message.updated_at) }}</dd>
           </div>
           <div v-if="hasProjectFields" class="md:col-span-2">
             <dt class="text-sm text-comma-neutral-600">Project Inquiry</dt>
@@ -84,14 +96,33 @@
             </dd>
           </div>
           <div class="md:col-span-2">
-            <dt class="text-sm text-comma-neutral-600">{{ $t('admin_contact_page.message') }}</dt>
+            <dt class="text-sm text-comma-neutral-600">{{ t('admin_contact_page.message') }}</dt>
             <dd class="mt-2 p-4 bg-comma-surface-subtle rounded-lg whitespace-pre-line">{{ message.message }}</dd>
           </div>
           <div v-if="message.reply_message" class="md:col-span-2">
-            <dt class="text-sm text-comma-neutral-600">{{ $t('admin_contact_page.your_reply') }}</dt>
+            <dt class="text-sm text-comma-neutral-600">{{ t('admin_contact_page.your_reply') }}</dt>
             <dd class="mt-2 p-4 bg-comma-primary/5 rounded-lg whitespace-pre-line">{{ message.reply_message }}</dd>
           </div>
         </dl>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-card p-6 lg:p-8">
+        <h2 class="mb-5 text-lg font-semibold text-comma-neutral-900">Activity Timeline</h2>
+        <div v-if="messageActivities.length" class="space-y-4">
+          <div v-for="activity in messageActivities" :key="activity.id" class="flex gap-3 border-b border-comma-border-subtle pb-4 last:border-0 last:pb-0">
+            <div class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-comma-primary/10 text-comma-primary">
+              <UIcon name="i-heroicons-clock" class="h-5 w-5" />
+            </div>
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <p class="font-medium text-comma-neutral-900">{{ activityLabel(activity.activity_type) }}</p>
+                <span class="text-sm text-comma-neutral-500">{{ formatDate(activity.occurred_at || activity.created_at || '') }}</span>
+              </div>
+              <p v-if="activity.notes" class="mt-1 text-sm text-comma-neutral-600 whitespace-pre-line">{{ activity.notes }}</p>
+            </div>
+          </div>
+        </div>
+        <p v-else class="text-sm text-comma-neutral-500">No activity recorded yet.</p>
       </div>
     </div>
 
@@ -108,7 +139,7 @@ import { useContactStore } from '~/store/contact'
 
 const route = useRoute()
 const store = useContactStore()
-const { locale } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
 const messageId = route.params.id as string
@@ -123,6 +154,7 @@ onMounted(async () => {
 })
 
 const message = computed(() => store.message)
+const messageActivities = computed(() => message.value?.activities || [])
 
 const hasProjectFields = computed(() => {
   const msg = message.value
@@ -142,14 +174,35 @@ const trackingFields = computed(() => {
   ].filter((item) => item.value)
 })
 
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString(locale.value === 'ar' ? 'ar-SA' : 'en-US', {
+function formatDate(date?: string | null) {
+  if (!date) return '-'
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return date
+
+  return parsed.toLocaleDateString(locale.value === 'ar' ? 'ar-SA' : 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+function activityLabel(type: string) {
+  const labels: Record<string, string> = {
+    lead_created: 'Lead Created',
+    whatsapp_sent: 'WhatsApp Sent',
+    call_made: 'Call Made',
+    meeting_scheduled: 'Meeting Scheduled',
+    note: 'Note',
+    status_change: 'Status Change',
+    reply_sent: 'Reply Sent',
+    marked_read: 'Marked Read',
+    agent_created: 'Agent Created',
+    agent_updated: 'Agent Updated',
+  }
+
+  return labels[type] || type
 }
 
 function openReplyModal() {

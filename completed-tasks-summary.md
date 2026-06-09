@@ -1,6 +1,6 @@
 # Completed Tasks Summary
 
-Last updated: 2026-06-08
+Last updated: 2026-06-09
 
 This file summarizes completed CRM and website requirement work in plain English. The detailed requirement tracker remains `requirements-audit.md`.
 
@@ -45,6 +45,32 @@ This file summarizes completed CRM and website requirement work in plain English
 - Admin can assign `website_level`.
 - Admin can set `display_order` to prioritize important agents.
 - Backend and frontend both support `website_level` and `display_order`.
+
+### Agent Dates And Activity Tracking
+
+- Agents and contact messages now expose:
+  - Created date.
+  - First contact date.
+  - Last activity date.
+  - Last update date.
+- A CRM activity timeline table and API were added.
+- Timeline activity types include:
+  - Lead Created.
+  - WhatsApp Sent.
+  - Call Made.
+  - Meeting Scheduled.
+  - Note.
+  - Status Change.
+  - Reply Sent.
+  - Marked Read.
+  - Agent Created.
+  - Agent Updated.
+- Contact lead submission creates a `Lead Created` timeline record.
+- Admin replies create a `Reply Sent` timeline record.
+- Marking unread messages as read creates a `Marked Read` timeline record.
+- Agent creation and update create timeline records.
+- Existing agents and contact messages were backfilled with tracking dates and initial timeline rows.
+- Admin agent and contact detail pages display tracking dates and the activity timeline.
 
 ## Projects Lead Generation Engine
 
@@ -137,6 +163,8 @@ This file summarizes completed CRM and website requirement work in plain English
 - Frontend production build passed with `npm run build`.
 - Backend PHP syntax checks passed for changed backend files.
 - New project status migration ran successfully.
+- CRM tracking migrations ran successfully.
+- Authenticated admin API verification passed for agent/contact tracking fields and timeline data.
 - Nuxt dev server was restarted and responded at `http://localhost:3000/`.
 
 Known non-blocking verification notes:
@@ -146,16 +174,6 @@ Known non-blocking verification notes:
 
 ## Still Not Completed
 
-- Agent dates/activity tracking:
-  - First contact date.
-  - Last activity.
-  - Last update visibility.
-  - Full timeline.
-- Full CRM activity timeline:
-  - Lead Created.
-  - WhatsApp Sent.
-  - Call Made.
-  - Meeting Scheduled.
 - Fully dynamic property attributes from control panel.
 - Decide whether project descriptions need a true rich-text/blog-style editor instead of a textarea.
 - Strict public hiding for draft project detail pages may need a separate public/admin project detail API split.
