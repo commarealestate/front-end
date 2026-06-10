@@ -68,7 +68,8 @@ module.exports = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Playfair Display", "serif"], // Luxury serif for headings
+        display: ["Playfair Display", "serif"],
+        "display-ar": ["Almarai", "IBM Plex Sans Arabic", "sans-serif"],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
