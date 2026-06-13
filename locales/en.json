@@ -344,6 +344,8 @@
     "call": "Call",
     "email": "Work Email",
     "whatsapp": "WhatsApp",
+    "tap_to_call": "Tap to call",
+    "tap_to_chat": "Tap to chat on WhatsApp",
     "no_images": "No images available"
   },
   "promo_widget": {

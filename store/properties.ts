@@ -75,6 +75,7 @@ export function normalizePropertyAgent(raw: any) {
     email: raw.email || raw.e_mail || "",
     personal_mobile:
       raw.personal_mobile || raw.personal_phone || raw.work_phone || raw.uf_phone_inner || "",
+    whatsapp: raw.whatsapp || "",
   };
 }
 

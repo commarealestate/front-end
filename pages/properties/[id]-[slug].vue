@@ -315,38 +315,47 @@
               </div>
 
               <!-- Contact Methods -->
-              <div class="space-y-2.5">
+              <div v-if="contactPhone || contactEmail || contactWhatsappLink" class="space-y-2.5">
                 <a v-if="contactPhone" :href="`tel:${contactPhone}`"
-                  class="flex items-center gap-3 p-3 rounded-xl border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition group">
+                  :aria-label="$t('property_page.call')"
+                  class="group flex items-center gap-3 rounded-xl border border-comma-border-subtle p-3 transition hover:border-comma-primary hover:bg-comma-primary/5">
                   <div
-                    class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary/20 transition">
-                    <Icon name="mdi:phone" class="w-5 h-5 text-comma-primary" />
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-comma-primary/10 transition group-hover:bg-comma-primary/20">
+                    <Icon name="mdi:phone" class="pointer-events-none h-5 w-5 text-comma-primary" />
                   </div>
                   <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.call') }}</div>
-                    <div class="font-medium text-comma-neutral-900"><span dir="ltr">{{ contactPhoneDisplay }}</span></div>
+                    <div class="font-medium text-comma-neutral-900">{{ $t('property_page.tap_to_call') }}</div>
                   </div>
                 </a>
-                <a v-if="contactEmail" :href="`mailto:${contactEmail}`"
-                  class="flex items-center gap-3 p-3 rounded-xl border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition group">
+
+                <a v-if="contactEmail" :href="contactEmailLink"
+                  :aria-label="$t('property_page.email')"
+                  class="group flex items-center gap-3 rounded-xl border border-comma-border-subtle p-3 transition hover:border-comma-primary hover:bg-comma-primary/5">
                   <div
-                    class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary/20 transition">
-                    <Icon name="mdi:email" class="w-5 h-5 text-comma-primary" />
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-comma-primary/10 transition group-hover:bg-comma-primary/20">
+                    <Icon name="mdi:email" class="pointer-events-none h-5 w-5 text-comma-primary" />
                   </div>
                   <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.email') }}</div>
-                    <div class="truncate font-medium text-comma-neutral-900">{{ contactEmail }}</div>
+                    <div class="truncate font-medium text-comma-neutral-900 select-text" dir="ltr">
+                      {{ contactEmail }}
+                    </div>
                   </div>
                 </a>
-                <a v-if="contactWhatsapp" :href="`https://wa.me/${contactWhatsapp}`" target="_blank"
-                  class="flex items-center gap-3 p-3 rounded-xl border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition group">
+
+                <a v-if="contactWhatsappLink" :href="contactWhatsappLink" target="_blank"
+                  rel="noopener noreferrer"
+                  :aria-label="$t('property_page.whatsapp')"
+                  class="group flex items-center gap-3 rounded-xl border border-comma-border-subtle p-3 transition hover:border-green-500 hover:bg-green-50">
                   <div
-                    class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary/20 transition">
-                    <Icon name="mdi:whatsapp" class="w-5 h-5 text-comma-primary" />
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 transition group-hover:bg-green-500">
+                    <Icon name="mdi:whatsapp"
+                      class="pointer-events-none h-5 w-5 text-green-600 transition group-hover:text-white" />
                   </div>
                   <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.whatsapp') }}</div>
-                    <div class="font-medium text-comma-neutral-900"><span dir="ltr">{{ contactWhatsappDisplay }}</span></div>
+                    <div class="font-medium text-comma-neutral-900">{{ $t('property_page.tap_to_chat') }}</div>
                   </div>
                 </a>
               </div>
@@ -575,16 +584,44 @@ function digitsOnly(value: string): string {
   return value.replace(/\D/g, '')
 }
 
+function asContactString(value: unknown): string {
+  if (typeof value === 'string') return value.trim()
+  if (value == null) return ''
+  return String(value).trim()
+}
+
+function agentPhoneRaw(agentData: Record<string, any> | null | undefined): string {
+  if (!agentData) return ''
+
+  return asContactString(
+    agentData.whatsapp
+    || agentData.personal_mobile
+    || agentData.personal_phone
+    || agentData.work_phone
+    || agentData.uf_phone_inner,
+  )
+}
+
+function agentPhoneDigits(agentData: Record<string, any> | null | undefined): string {
+  return digitsOnly(agentPhoneRaw(agentData))
+}
+
 const contactEmail = computed(() => {
   if (agent.value) {
-    return agent.value.e_mail || agent.value.email || agent.value.company_e_mail || ''
+    return asContactString(
+      agent.value.e_mail || agent.value.email || agent.value.company_e_mail,
+    )
   }
   return defaultEmail
 })
 
+const contactEmailLink = computed(() => {
+  return contactEmail.value ? `mailto:${contactEmail.value}` : ''
+})
+
 const contactPhone = computed(() => {
   if (agent.value) {
-    return agent.value.personal_mobile || ''
+    return agentPhoneRaw(agent.value)
   }
   return defaultPhone
 })
@@ -593,7 +630,8 @@ const contactPhoneDisplay = computed(() => contactPhone.value)
 
 const contactWhatsapp = computed(() => {
   if (agent.value) {
-    return agent.value.personal_mobile ? digitsOnly(agent.value.personal_mobile) : ''
+    const digits = agentPhoneDigits(agent.value)
+    if (digits) return digits
   }
   return defaultWhatsapp
 })
@@ -601,6 +639,18 @@ const contactWhatsapp = computed(() => {
 const contactWhatsappDisplay = computed(() => {
   const digits = contactWhatsapp.value
   return digits ? (digits.startsWith('+') ? digits : `+${digits}`) : ''
+})
+
+const contactWhatsappLink = computed(() => {
+  if (!contactWhatsapp.value) return ''
+
+  const ref = property.value?.referenceNumber || ''
+  const title = propertyTitle.value || ''
+  const message = locale.value === 'ar'
+    ? `مرحباً، أنا مهتم بالعقار ${ref}${title ? ` - ${title}` : ''}`
+    : `Hi, I'm interested in property ${ref}${title ? ` - ${title}` : ''}`
+
+  return `https://wa.me/${contactWhatsapp.value}?text=${encodeURIComponent(message)}`
 })
 
 // Parsed amenities (split by dash)
@@ -636,6 +686,16 @@ async function fetchProperty() {
       // 2. Use embedded listing agent, or fetch by listing_owner / agent id
       if (fetched.linkedAgent) {
         agent.value = fetched.linkedAgent
+
+        const agentId = fetched.linkedAgent.agent_id || fetched.listingOwner
+        if (agentId && !agentPhoneDigits(fetched.linkedAgent)) {
+          try {
+            const fullAgent = await store.fetchAgentById(agentId)
+            if (fullAgent) agent.value = fullAgent
+          } catch (agentErr) {
+            console.warn('Failed to fetch full agent profile:', agentErr)
+          }
+        }
       } else if (fetched.listingOwner && fetched.listingOwner !== 0) {
         try {
           agent.value = await store.fetchAgentById(fetched.listingOwner)
