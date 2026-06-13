@@ -330,7 +330,7 @@
     "properties_listed": "عقار مدرج",
 
     "call": "اتصال",
-    "email": "بريد إلكتروني",
+    "email": "بريد العمل",
     "whatsapp": "واتساب",
 
     "no_images": "لا توجد صور"
@@ -1252,7 +1252,34 @@
     },
     "confirm": "تأكيد",
     "bedrooms": "غرف النوم",
-    "bathrooms": "الحمامات"
+    "bathrooms": "الحمامات",
+    "agent_sync": {
+      "crm_sync": "مزامنة CRM الخارجية",
+      "source": "مصدر البيانات",
+      "crm_property_id": "معرّف العقار في CRM",
+      "listing_owner": "مالك الإدراج (معرّف المسوق في CRM)",
+      "inventory_status": "حالة المخزون",
+      "external_badge": "متزامن من CRM",
+      "internal_badge": "مسوق داخلي",
+      "view_profile": "عرض ملف المسوق الكامل",
+      "listing_owner_unlinked": "معرّف مالك الإدراج {id} موجود في CRM، لكن لا يوجد مسوق مربوط في النظام.",
+      "crm_agent_id": "معرّف المسوق في CRM (xml_id)",
+      "local_agent_id": "معرّف المسوق المحلي",
+      "agent_type": "نوع المسوق",
+      "departments": "الأقسام",
+      "email": "البريد الإلكتروني",
+      "company_email": "بريد الشركة",
+      "mobile": "الجوال",
+      "phone": "الهاتف",
+      "specialties": "التخصصات",
+      "service_area": "منطقة الخدمة",
+      "cre": "CRE",
+      "show_on_website": "عرض على الموقع",
+      "active": "نشط",
+      "yes": "نعم",
+      "no": "لا",
+      "unnamed_agent": "مسوق بدون اسم"
+    }
   },
   "admin_projects": {
     "title": "المشاريع",

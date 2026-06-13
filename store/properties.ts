@@ -138,6 +138,7 @@ function normalizeAdminProperty(raw: any) {
   return {
     ...raw,
     property_id: raw.property_id ?? raw.id,
+    agent: normalizePropertyAgent(raw.agent),
     title,
     title_en: title,
     title_ar: titleAr,

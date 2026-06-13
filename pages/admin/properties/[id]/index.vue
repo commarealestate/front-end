@@ -188,12 +188,7 @@
           <h2 class="mb-4 text-lg font-display font-semibold">
             {{ $t('admin_properties_page.agent') }}
           </h2>
-          <p v-if="property.agent" class="text-comma-neutral-700">
-            {{ property.agent.name || property.agent.first_name || 'Assigned agent' }}
-          </p>
-          <p v-else class="italic text-comma-neutral-500">
-            {{ $t('admin_properties_page.no_agent') }}
-          </p>
+          <AdminPropertiesAgentSyncPanel :property="property" />
         </div>
       </div>
     </div>
