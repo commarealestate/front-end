@@ -1,31 +1,37 @@
 <template>
   <div class="min-h-screen bg-comma-neutral-50" :dir="direction">
-    <!-- Hero Section (unchanged) -->
-    <section class="relative min-h-[80vh] lg:min-h-screen flex items-center overflow-hidden">
+    <!-- Hero Section -->
+    <section class="relative flex min-h-[80vh] items-center overflow-hidden lg:min-h-screen">
       <div class="absolute inset-0">
-        <img src="~/assets/images/props-hero.jpg" :alt="$t('properties_page.title')"
-          class="w-full h-full object-cover scale-125 animate-fade-in" />
-        <div class="absolute inset-0 bg-gradient-to-br from-black/50 via-black/40 to-black/30"></div>
+        <img
+          src="~/assets/images/props-hero.jpg"
+          :alt="$t('properties_page.title')"
+          class="h-full w-full scale-125 animate-fade-in object-cover"
+          :class="mediaBoostClass"
+        />
+        <HeroOverlay variant="bright" align="center" :direction="direction" />
       </div>
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="max-w-4xl mx-auto text-center">
+      <div class="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-4xl text-center" :class="contentPanelClass">
           <div class="animate-slide-up mb-6">
             <span
-              class="inline-block px-3 py-1 lg:px-4 lg:py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs lg:text-sm font-semibold mb-4">
+              class="mb-4 inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm lg:px-4 lg:py-2 lg:text-sm">
               {{ $t('properties_page.hero_tag') }}
             </span>
             <h1
-              class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white mb-4 lg:mb-6 leading-tight font-display">
+              class="mb-4 font-display text-3xl font-bold leading-tight sm:text-4xl lg:mb-6 lg:text-5xl xl:text-6xl 2xl:text-7xl"
+              :class="headingClass">
               {{ $t('properties_page.title') }}
             </h1>
           </div>
           <p
-            class="text-base sm:text-lg lg:text-xl xl:text-2xl text-white/90 mb-6 lg:mb-10 leading-relaxed animate-slide-up animation-delay-200">
+            class="animate-slide-up animation-delay-200 mb-6 text-base leading-relaxed sm:text-lg lg:mb-10 lg:text-xl xl:text-2xl"
+            :class="bodyClass">
             {{ $t('properties_page.subtitle') }}
           </p>
         </div>
       </div>
-      <div class="absolute bottom-0 left-0 right-0 h-24 lg:h-32 bg-gradient-to-t from-comma-neutral-50 to-transparent">
+      <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-comma-neutral-50 to-transparent lg:h-32">
       </div>
     </section>
 
@@ -148,6 +154,7 @@ import type { NormalizedProperty } from '~/types/property'
 
 const { locale } = useI18n()
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr')
+const { headingClass, bodyClass, contentPanelClass, mediaBoostClass } = useSiteHero()
 const route = useRoute()
 const router = useRouter()
 const store = usePropertiesStore()

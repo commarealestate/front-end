@@ -44,24 +44,24 @@
             :src="getCoverImage(project)"
             :alt="getProjectTitle(project)"
             class="h-full w-full object-cover"
+            :class="mediaBoostClass"
             @error="handleImageError"
           />
-          <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <HeroOverlay variant="bright" :direction="direction" />
         </div>
 
         <div class="relative z-20 flex h-full min-h-[70vh] flex-col justify-end p-6 sm:p-10 lg:min-h-[75vh] lg:p-14">
-          <div class="max-w-3xl text-white">
+          <div class="max-w-3xl" :class="contentPanelClass">
             <span
               v-if="getProjectBadge(projects[currentSlide])"
               class="mb-4 inline-block rounded-full bg-comma-primary px-3 py-1 text-sm font-semibold text-white"
             >
               {{ getProjectBadge(projects[currentSlide]) }}
             </span>
-            <h3 class="mb-4 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl xl:text-6xl">
+            <h3 class="mb-4 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl xl:text-6xl" :class="headingClass">
               {{ getProjectTitle(projects[currentSlide]) }}
             </h3>
-            <p class="mb-8 max-w-2xl text-base leading-relaxed text-white/90 sm:text-lg lg:text-xl">
+            <p class="mb-8 max-w-2xl text-base leading-relaxed sm:text-lg lg:text-xl" :class="bodyClass">
               {{ stripHtml(getProjectDescription(projects[currentSlide])) }}
             </p>
             <NuxtLink
@@ -131,6 +131,7 @@ import { stripHtml } from '~/utils/stripHtml'
 const { locale } = useI18n()
 const localePath = useLocalePath()
 const direction = computed(() => (locale.value === 'ar' ? 'rtl' : 'ltr'))
+const { headingClass, bodyClass, contentPanelClass, mediaBoostClass } = useSiteHero()
 const store = useProjectsStore()
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1600&fit=crop'

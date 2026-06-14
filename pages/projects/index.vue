@@ -1,20 +1,26 @@
 <template>
     <div class="min-h-screen bg-comma-neutral-50" :dir="direction">
         <!-- Hero Section with Fixed Background -->
-       <section
-            class="relative h-[80vh] min-h-[650px] flex items-center justify-center overflow-hidden bg-cover bg-center bg-fixed"
-            style="background-image: url('/images/projects.jpg')">
-            <!-- Overlay -->
-            <div class="absolute inset-0 bg-black/55 z-10"></div>
+       <section class="relative flex h-[80vh] min-h-[650px] items-center justify-center overflow-hidden">
+            <div class="absolute inset-0">
+              <img
+                src="/images/projects.jpg"
+                alt=""
+                class="h-full w-full object-cover object-center"
+                :class="mediaBoostClass"
+              />
+              <HeroOverlay variant="bright" align="center" :direction="direction" />
+            </div>
 
             <!-- Content -->
-            <div class="relative z-20 text-center text-white px-6 max-w-5xl mx-auto">
-                <h1 class="text-4xl md:text-6xl lg:text-7xl font-display font-bold mb-6 animate-slide-up">
+            <div class="relative z-10 mx-auto max-w-5xl px-6 text-center" :class="contentPanelClass">
+                <h1 class="animate-slide-up mb-6 font-display text-4xl font-bold md:text-6xl lg:text-7xl" :class="headingClass">
                     {{ $t('projects_page.hero_title') || 'Our Projects' }}
                 </h1>
 
                 <p
-                    class="text-lg md:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed animate-slide-up animation-delay-200">
+                    class="animate-slide-up animation-delay-200 mx-auto max-w-3xl text-lg leading-relaxed md:text-xl lg:text-2xl"
+                    :class="bodyClass">
                     {{ $t('projects_page.hero_subtitle') || 'Discover our exclusive developments designed for modern living' }}
                 </p>
             </div>
@@ -103,6 +109,7 @@ import { useDebounceFn } from '@vueuse/core'
 
 const { locale } = useI18n()
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr')
+const { headingClass, bodyClass, contentPanelClass, mediaBoostClass } = useSiteHero()
 const route = useRoute()
 const router = useRouter()
 const store = useProjectsStore()

@@ -1,16 +1,23 @@
 <template>
   <div class="min-h-screen bg-comma-neutral-50" :dir="direction">
     <!-- Hero Section -->
-    <section
-      class="relative h-[70vh] lg:min-h-screen flex items-center overflow-hidden bg-[url('/images/agents.jpeg')] bg-cover bg-center bg-fixed">
-      <div class="absolute inset-0 bg-grid-white/[0.02] bg-grid-pattern"></div>
-      <div class="absolute inset-0 bg-gradient-to-br from-black/50 via-black/40 to-black/30"></div>
-      <div class="container relative z-10 px-4 lg:px-8 mx-auto text-center">
-        <div class="max-w-4xl mx-auto text-center">
-          <h1 class="text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 leading-tight font-display">
+    <section class="relative flex h-[70vh] items-center overflow-hidden lg:min-h-screen">
+      <div class="absolute inset-0">
+        <img
+          src="/images/agents.jpeg"
+          alt=""
+          class="h-full w-full object-cover object-center"
+          :class="mediaBoostClass"
+        />
+        <div class="absolute inset-0 bg-grid-white/[0.02] bg-grid-pattern" />
+        <HeroOverlay variant="bright" align="center" :direction="direction" />
+      </div>
+      <div class="container relative z-10 mx-auto px-4 text-center lg:px-8">
+        <div class="mx-auto max-w-4xl" :class="contentPanelClass">
+          <h1 class="mb-6 font-display text-4xl font-bold leading-tight lg:text-5xl xl:text-6xl" :class="headingClass">
             {{ $t('agents_page.title') }}
           </h1>
-          <p class="text-lg lg:text-xl text-white/90 mb-8 leading-relaxed">
+          <p class="mb-8 text-lg leading-relaxed lg:text-xl" :class="bodyClass">
             {{ $t('agents_page.subtitle') }}
           </p>
         </div>
@@ -444,6 +451,7 @@ import type { Property } from '~/types/property'
 const { locale } = useI18n()
 const localePath = useLocalePath()
 const direction = computed(() => (locale.value === 'ar' ? 'rtl' : 'ltr'))
+const { headingClass, bodyClass, contentPanelClass, mediaBoostClass } = useSiteHero()
 
 const store = useAgentsStore()
 const propertiesStore = usePropertiesStore()

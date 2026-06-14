@@ -1,26 +1,36 @@
 <template>
   <div class="min-h-screen bg-comma-neutral-50" :dir="direction">
     <!-- Hero Section with Parallax Image -->
-    <section class="relative py-20 lg:py-28 overflow-hidden">
-      <!-- Background Image with Parallax -->
+    <section class="relative overflow-hidden py-20 lg:py-28">
       <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute inset-0 bg-cover bg-center bg-fixed scale-110"
-          :style="{ backgroundImage: `url('/images/about-hero.jpg')` }"></div>
-        <div class="absolute inset-0 bg-gradient-to-br from-comma-primary/80 to-comma-primary-dark/90"></div>
+        <div
+          class="absolute inset-0 scale-110 bg-cover bg-center bg-fixed"
+          :class="mediaBoostClass"
+          :style="{ backgroundImage: `url('/images/about-hero.jpg')` }"
+        />
+        <div class="absolute inset-0 bg-gradient-to-br from-comma-primary/35 to-comma-primary-dark/45" />
+        <HeroOverlay variant="bright" align="center" :direction="direction" />
         <div class="absolute inset-0 opacity-10">
           <div class="absolute inset-0 bg-grid-white/[0.02] bg-grid-pattern"></div>
         </div>
       </div>
 
       <div class="container relative z-10 px-4 lg:px-8">
-        <div class="max-w-4xl mx-auto text-center">
-          <h1 class="text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 leading-tight font-display"
-            v-motion-fade-visible :initial="{ opacity: 0, y: 50 }"
+        <div class="mx-auto max-w-4xl text-center" :class="contentPanelClass">
+          <h1
+            class="mb-6 font-display text-4xl font-bold leading-tight lg:text-5xl xl:text-6xl"
+            :class="headingClass"
+            v-motion-fade-visible
+            :initial="{ opacity: 0, y: 50 }"
             :enter="{ opacity: 1, y: 0, transition: { duration: 800 } }">
             {{ $t('about_page.title') }}
           </h1>
-          <p class="text-lg lg:text-xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto" v-motion-fade-visible
-            :initial="{ opacity: 0, y: 50 }" :enter="{ opacity: 1, y: 0, transition: { duration: 800, delay: 200 } }">
+          <p
+            class="mx-auto mb-8 max-w-3xl text-lg leading-relaxed lg:text-xl"
+            :class="bodyClass"
+            v-motion-fade-visible
+            :initial="{ opacity: 0, y: 50 }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 800, delay: 200 } }">
             {{ $t('about_page.subtitle') }}
           </p>
         </div>
@@ -294,6 +304,7 @@ import { useMotion } from '@vueuse/motion'
 
 const { locale } = useI18n()
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr')
+const { headingClass, bodyClass, contentPanelClass, mediaBoostClass } = useSiteHero()
 
 useHead({
   title: 'About Comma Real Estate | UAE Real Estate Brokerage',
