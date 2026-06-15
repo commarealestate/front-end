@@ -56,13 +56,13 @@
 
           <!-- Actions -->
           <div class="grid grid-cols-3 gap-2">
-            <a :href="`tel:${defaultPhone}`" class="btn-mini primary">
+            <a v-if="telLink" :href="telLink" class="btn-mini primary">
               <Icon name="mdi:phone" class="w-4 h-4" />
             </a>
-            <a :href="emailLink" class="btn-mini secondary">
+            <a v-if="mailtoLink" :href="mailtoLink" class="btn-mini secondary">
               <Icon name="mdi:email" class="w-4 h-4" />
             </a>
-            <a :href="whatsappLink" target="_blank" class="btn-mini whatsapp">
+            <a v-if="whatsappLink" :href="whatsappLink" target="_blank" rel="noopener noreferrer" class="btn-mini whatsapp">
               <Icon name="mdi:whatsapp" class="w-4 h-4" />
             </a>
           </div>
@@ -109,7 +109,7 @@
                 class="flex-1 text-center py-2 rounded-lg bg-comma-primary text-white text-xs font-semibold">
                 {{ $t('promo_widget.view') }}
               </NuxtLink>
-              <a :href="whatsappLink" target="_blank"
+              <a v-if="whatsappLink" :href="whatsappLink" target="_blank" rel="noopener noreferrer"
                 class="px-3 flex items-center justify-center rounded-lg bg-green-500 text-white">
                 <Icon name="mdi:whatsapp" class="w-4 h-4" />
               </a>
@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { usePropertiesStore } from '~/store/properties'
+import { usePropertiesStore, normalizePropertyAgent } from '~/store/properties'
 import { storeToRefs } from 'pinia'
 import type { Property } from '~/types/property'
 
@@ -208,48 +208,21 @@ function formatPrice(price: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(price)
 }
 
-/* CONTACT INFO */
-const defaultPhone = '+971544411700'
-const defaultEmail = 'info@commarealestate.ae'
-const defaultWhatsapp = '971544411700'
-
 const propertyUrl = computed(() => {
   if (!hotDealProperty.value) return ''
   return `${window.location.origin}${localePath(`/properties/${hotDealProperty.value.property_id}-${propertySlug.value}`)}`
 })
 
-const messageText = computed(() => {
-  if (!hotDealProperty.value) return ''
-  return `Hello,
+const listingAgent = computed(() => normalizePropertyAgent(hotDealProperty.value?.agent))
 
-I’m interested in the following property and would like to get more information:
-
----- Property Details ----
-
-Property: ${displayTitle.value}
-Location: ${propertyLocation.value}
-Price: ${displayPrice.value}
-
-Property Link:
-${propertyUrl.value}
-
---------------------------
-
-Could you please share more details about this property (availability, payment plan, and viewing options)?
-
-Thank you.`
-})
-
-const emailLink = computed(() => {
-  const subject = encodeURIComponent(`Inquiry about: ${displayTitle.value}`)
-  const body = encodeURIComponent(messageText.value)
-  return `mailto:${defaultEmail}?subject=${subject}&body=${body}`
-})
-
-const whatsappLink = computed(() => {
-  const text = encodeURIComponent(messageText.value)
-  return `https://wa.me/${defaultWhatsapp}?text=${text}`
-})
+const { telLink, mailtoLink, whatsappLink } = usePropertyContact(computed(() => ({
+  agent: listingAgent.value,
+  title: displayTitle.value,
+  location: propertyLocation.value,
+  price: displayPriceValue.value,
+  referenceNumber: hotDealProperty.value?.reference_number,
+  propertyUrl: propertyUrl.value,
+})))
 
 /* UI STATE */
 const isOpen = ref(true)
@@ -313,6 +286,6 @@ const closedTransform = computed(() =>
   @apply bg-comma-surface-elevated text-comma-primary hover:bg-comma-surface-subtle;
 }
 .btn-mini.whatsapp {
-  @apply bg-green-100 text-green-700 hover:bg-green-200;
+  @apply border border-green-200 bg-green-50 text-green-700 hover:border-green-500 hover:bg-green-500 hover:text-white;
 }
 </style>

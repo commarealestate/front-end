@@ -54,19 +54,19 @@
 
       <!-- Action buttons -->
       <div class="flex gap-2 pt-3 mt-auto border-t border-comma-border-subtle">
-        <a :href="`tel:${DEFAULT_PHONE}`"
-          class="flex-1 flex items-center justify-center gap-1 py-2 bg-comma-neutral-100 hover:bg-comma-primary hover:text-white rounded-lg text-sm transition-colors">
+        <a v-if="telLink" :href="telLink"
+          class="group/btn flex-1 flex items-center justify-center gap-1 py-2 bg-comma-neutral-100 hover:bg-comma-primary hover:text-white rounded-lg text-sm transition-colors">
           <Icon name="heroicons:phone" class="w-4 h-4" />
           <span class="hidden sm:inline">{{ $t('properties_page.call') }}</span>
         </a>
-        <a :href="getEmailLink" target="_blank"
-          class="flex-1 flex items-center justify-center gap-1 py-2 bg-comma-neutral-100 hover:bg-comma-primary hover:text-white rounded-lg text-sm transition-colors">
+        <a v-if="mailtoLink" :href="mailtoLink"
+          class="group/btn flex-1 flex items-center justify-center gap-1 py-2 bg-comma-neutral-100 hover:bg-comma-primary hover:text-white rounded-lg text-sm transition-colors">
           <Icon name="heroicons:envelope" class="w-4 h-4" />
           <span class="hidden sm:inline">{{ $t('properties_page.email') }}</span>
         </a>
-        <a :href="getWhatsAppLink" target="_blank"
-          class="flex-1 flex items-center justify-center py-2 bg-comma-neutral-100 hover:bg-comma-secondary hover:text-white rounded-lg transition-colors">
-          <Icon name="heroicons:chat-bubble-left" class="w-4 h-4" />
+        <a v-if="whatsappLink" :href="whatsappLink" target="_blank" rel="noopener noreferrer"
+          class="group/btn flex-1 flex items-center justify-center gap-1 rounded-lg border border-green-200 bg-green-50 py-2 text-green-700 transition-colors hover:bg-green-500 hover:text-white hover:border-green-500">
+          <Icon name="mdi:whatsapp" class="w-4 h-4 text-green-600 group-hover/btn:text-white" />
         </a>
       </div>
     </div>
@@ -83,9 +83,6 @@ const props = defineProps<{
 const { locale } = useI18n()
 const localePath = useLocalePath()
 
-const DEFAULT_PHONE = '+971508008879'
-const DEFAULT_EMAIL = 'info@commarealestate.ae'
-const DEFAULT_WHATSAPP = '971506729129'
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&fit=crop'
 
 const displayTitle = computed(() => {
@@ -105,6 +102,23 @@ const propertySlug = computed(() => String(props.property.titleEnglish || props.
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-+|-+$/g, ''))
 
+const propertyUrl = computed(() => {
+  const path = localePath(`/properties/${props.property.id}-${propertySlug.value}`)
+  if (import.meta.client) {
+    return `${window.location.origin}${path}`
+  }
+  return path
+})
+
+const { telLink, mailtoLink, whatsappLink } = usePropertyContact(computed(() => ({
+  agent: props.property.linkedAgent,
+  title: displayTitle.value,
+  location: displayLocation.value,
+  price: props.property.price,
+  referenceNumber: props.property.referenceNumber,
+  propertyUrl: propertyUrl.value,
+})))
+
 const hasValidData = computed(() => props.property.price != null)
 
 const imageSrc = computed(() => {
@@ -120,35 +134,6 @@ const handleImageError = (event: Event) => {
 function formatPrice(price: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(price)
 }
-
-function getPropertyUrl() {
-  return `${window.location.origin}${localePath(`/properties/${props.property.id}-${propertySlug.value}`)}`
-}
-
-function getMessageText() {
-  return `Hello,
-
-I'm interested in the following property:
-
-Property: ${displayTitle.value}
-Location: ${displayLocation.value}
-Price: ${formatPrice(props.property.price)}
-
-Property Link: ${getPropertyUrl()}
-
-Could you please share more details?`
-}
-
-const getEmailLink = computed(() => {
-  const subject = encodeURIComponent(`Inquiry about: ${displayTitle.value}`)
-  const body = encodeURIComponent(getMessageText())
-  return `mailto:${DEFAULT_EMAIL}?subject=${subject}&body=${body}`
-})
-
-const getWhatsAppLink = computed(() => {
-  const text = encodeURIComponent(getMessageText())
-  return `https://wa.me/${DEFAULT_WHATSAPP}?text=${text}`
-})
 </script>
 
 <style scoped>

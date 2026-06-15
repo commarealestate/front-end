@@ -315,8 +315,8 @@
               </div>
 
               <!-- Contact Methods -->
-              <div v-if="contactPhone || contactEmail || contactWhatsappLink" class="space-y-2.5">
-                <a v-if="contactPhone" :href="`tel:${contactPhone}`"
+              <div v-if="telLink || mailtoLink || whatsappLink" class="space-y-2.5">
+                <a v-if="telLink" :href="telLink"
                   :aria-label="$t('property_page.call')"
                   class="group flex items-center gap-3 rounded-xl border border-comma-border-subtle p-3 transition hover:border-comma-primary hover:bg-comma-primary/5">
                   <div
@@ -325,11 +325,13 @@
                   </div>
                   <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.call') }}</div>
-                    <div class="font-medium text-comma-neutral-900">{{ $t('property_page.tap_to_call') }}</div>
+                    <div class="truncate font-medium text-comma-neutral-900 select-text" dir="ltr">
+                      {{ phoneDisplay }}
+                    </div>
                   </div>
                 </a>
 
-                <a v-if="contactEmail" :href="contactEmailLink"
+                <a v-if="mailtoLink" :href="mailtoLink"
                   :aria-label="$t('property_page.email')"
                   class="group flex items-center gap-3 rounded-xl border border-comma-border-subtle p-3 transition hover:border-comma-primary hover:bg-comma-primary/5">
                   <div
@@ -344,7 +346,7 @@
                   </div>
                 </a>
 
-                <a v-if="contactWhatsappLink" :href="contactWhatsappLink" target="_blank"
+                <a v-if="whatsappLink" :href="whatsappLink" target="_blank"
                   rel="noopener noreferrer"
                   :aria-label="$t('property_page.whatsapp')"
                   class="group flex items-center gap-3 rounded-xl border border-comma-border-subtle p-3 transition hover:border-green-500 hover:bg-green-50">
@@ -355,7 +357,9 @@
                   </div>
                   <div class="min-w-0">
                     <div class="text-xs text-comma-neutral-600">{{ $t('property_page.whatsapp') }}</div>
-                    <div class="font-medium text-comma-neutral-900">{{ $t('property_page.tap_to_chat') }}</div>
+                    <div class="truncate font-medium text-comma-neutral-900 select-text" dir="ltr">
+                      {{ whatsappDisplay }}
+                    </div>
                   </div>
                 </a>
               </div>
@@ -472,6 +476,7 @@
 <script setup lang="ts">
 import { usePropertiesStore } from '~/store/properties'
 import type { NormalizedProperty } from '~/types/property'
+import { digitsOnly } from '~/utils/propertyContact'
 
 const route = useRoute()
 const { locale, t } = useI18n()
@@ -506,9 +511,6 @@ const leadForm = reactive({
 })
 
 // Contact info (fallback)
-const defaultPhone = '+971544411700'
-const defaultEmail = 'info@commarealestate.ae'
-const defaultWhatsapp = '971544411700'
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&fit=crop'
 
 // Computed properties
@@ -521,6 +523,40 @@ const propertyDescription = computed(() => {
   if (!property.value) return ''
   return locale.value === 'ar' ? property.value.descriptionArabic : property.value.descriptionEnglish
 })
+
+const propertyLocation = computed(() => {
+  if (!property.value) return ''
+  return locale.value === 'ar'
+    ? property.value.locationArabic || property.value.locationEnglish || property.value.location
+    : property.value.locationEnglish || property.value.locationArabic || property.value.location
+})
+
+const propertyPageUrl = computed(() => {
+  const path = localePath(route.fullPath)
+  if (import.meta.client) {
+    return `${window.location.origin}${path}`
+  }
+  return path
+})
+
+const {
+  email: contactEmail,
+  phoneDisplay,
+  whatsappDisplay,
+  telLink,
+  mailtoLink,
+  whatsappLink,
+  agentName,
+  agentJobTitle,
+  hasAgent: hasLinkedAgent,
+} = usePropertyContact(computed(() => ({
+  agent: agent.value,
+  title: propertyTitle.value,
+  location: propertyLocation.value,
+  price: property.value?.price,
+  referenceNumber: property.value?.referenceNumber,
+  propertyUrl: propertyPageUrl.value,
+})))
 
 const shareButtonLabel = computed(() => {
   if (shareState.value === 'copied') {
@@ -557,101 +593,23 @@ const floorPlanImages = computed(() => {
 })
 
 // Agent display helpers
-const hasLinkedAgent = computed(() => Boolean(agent.value))
-
-const agentName = computed(() => {
-  if (!agent.value) return ''
-  const parts = [
-    agent.value.first_name || agent.value.name,
-    agent.value.second_name || agent.value.middle_name,
-    agent.value.last_name,
-  ].filter(Boolean)
-  return parts.join(' ').trim()
-})
-
-const agentJobTitle = computed(() => {
-  if (!agent.value) return ''
-  return agent.value.position || agent.value.personal_profession || agent.value.title || ''
-})
-
 const agentPhoto = computed(() => {
   if (!agent.value) return ''
   const photos = agent.value.photo || agent.value.personal_photo || []
   return photos.length ? photos[0] : ''
 })
 
-function digitsOnly(value: string): string {
-  return value.replace(/\D/g, '')
-}
-
-function asContactString(value: unknown): string {
-  if (typeof value === 'string') return value.trim()
-  if (value == null) return ''
-  return String(value).trim()
-}
-
-function agentPhoneRaw(agentData: Record<string, any> | null | undefined): string {
+function agentPhoneDigits(agentData: Record<string, any> | null | undefined): string {
   if (!agentData) return ''
-
-  return asContactString(
+  return digitsOnly(
     agentData.whatsapp
     || agentData.personal_mobile
     || agentData.personal_phone
     || agentData.work_phone
-    || agentData.uf_phone_inner,
+    || agentData.uf_phone_inner
+    || '',
   )
 }
-
-function agentPhoneDigits(agentData: Record<string, any> | null | undefined): string {
-  return digitsOnly(agentPhoneRaw(agentData))
-}
-
-const contactEmail = computed(() => {
-  if (agent.value) {
-    return asContactString(
-      agent.value.e_mail || agent.value.email || agent.value.company_e_mail,
-    )
-  }
-  return defaultEmail
-})
-
-const contactEmailLink = computed(() => {
-  return contactEmail.value ? `mailto:${contactEmail.value}` : ''
-})
-
-const contactPhone = computed(() => {
-  if (agent.value) {
-    return agentPhoneRaw(agent.value)
-  }
-  return defaultPhone
-})
-
-const contactPhoneDisplay = computed(() => contactPhone.value)
-
-const contactWhatsapp = computed(() => {
-  if (agent.value) {
-    const digits = agentPhoneDigits(agent.value)
-    if (digits) return digits
-  }
-  return defaultWhatsapp
-})
-
-const contactWhatsappDisplay = computed(() => {
-  const digits = contactWhatsapp.value
-  return digits ? (digits.startsWith('+') ? digits : `+${digits}`) : ''
-})
-
-const contactWhatsappLink = computed(() => {
-  if (!contactWhatsapp.value) return ''
-
-  const ref = property.value?.referenceNumber || ''
-  const title = propertyTitle.value || ''
-  const message = locale.value === 'ar'
-    ? `مرحباً، أنا مهتم بالعقار ${ref}${title ? ` - ${title}` : ''}`
-    : `Hi, I'm interested in property ${ref}${title ? ` - ${title}` : ''}`
-
-  return `https://wa.me/${contactWhatsapp.value}?text=${encodeURIComponent(message)}`
-})
 
 // Parsed amenities (split by dash)
 const parsedAmenities = computed(() => {
