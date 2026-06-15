@@ -147,7 +147,7 @@
             
             <div class="space-y-2">
               <a 
-                href="tel:+971508008879" 
+                :href="telLink" 
                 class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary transition-colors duration-300"
               >
                 <div class="w-8 h-8 rounded-full bg-comma-primary/10 flex items-center justify-center">
@@ -155,11 +155,11 @@
                 </div>
                 <div>
                   <div class="text-xs text-comma-neutral-400">{{ $t('nav.call_us') }}</div>
-                  <div class="text-sm font-medium text-comma-neutral-700">+971 50 800 8879</div>
+                  <div class="text-sm font-medium text-comma-neutral-700" dir="ltr">{{ phoneDisplay }}</div>
                 </div>
               </a>
               <a 
-                href="mailto:info@commarealestate.ae" 
+                :href="mailtoLink" 
                 class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary transition-colors duration-300"
               >
                 <div class="w-8 h-8 rounded-full bg-comma-primary/10 flex items-center justify-center">
@@ -167,7 +167,7 @@
                 </div>
                 <div>
                   <div class="text-xs text-comma-neutral-400">{{ $t('nav.email_us') }}</div>
-                  <div class="text-sm font-medium text-comma-neutral-700">info@commarealestate.ae</div>
+                  <div class="text-sm font-medium text-comma-neutral-700">{{ email }}</div>
                 </div>
               </a>
             </div>
@@ -215,6 +215,7 @@ const isScrolled = ref(false);
 const showLanguageOverlay = ref(false);
 
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr');
+const { email, phoneDisplay, telLink, mailtoLink } = useSiteContact('info')
 
 // Navigation Items
 const allNavItems = [

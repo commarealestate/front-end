@@ -89,8 +89,12 @@
               <h2 class="text-2xl lg:text-3xl font-bold text-white mb-4 font-display">
                 {{ $t('career_page.cta_title') }}
               </h2>
-              <p class="text-white/90 mb-8 max-w-2xl mx-auto">
+              <p class="text-white/90 mb-4 max-w-2xl mx-auto">
                 {{ $t('career_page.cta_subtitle') }}
+              </p>
+              <p class="text-white/80 text-sm">
+                {{ locale === 'ar' ? 'أو راسلنا على' : 'Or email us at' }}
+                <a :href="careersMailto" class="font-semibold text-white underline hover:text-comma-secondary">{{ careersEmail }}</a>
               </p>
             </div>
 
@@ -265,6 +269,7 @@ const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const router = useRouter()
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr')
+const { email: careersEmail, mailtoLink: careersMailto } = useSiteContact('careers')
 
 // SEO Head (unchanged)
 useHead({

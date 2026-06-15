@@ -27,6 +27,10 @@
                             {{ $t('contact_page.form_title') || 'Send Inquiry' }}
                         </h2>
                         <ProjectLeadForm :project="project" />
+                        <p class="mt-4 border-t border-comma-border-subtle pt-4 text-center text-sm text-comma-neutral-600">
+                            {{ locale === 'ar' ? 'أو تواصل مع فريق المبيعات على' : 'Or reach our sales team at' }}
+                            <a :href="salesMailto" class="font-semibold text-comma-primary hover:underline">{{ salesEmail }}</a>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -196,6 +200,7 @@ import 'swiper/css/pagination'
 const route = useRoute()
 const { locale } = useI18n()
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr')
+const { email: salesEmail, mailtoLink: salesMailto } = useSiteContact('sales')
 const store = useProjectsStore()
 
 // Extract ID from slug (e.g., "2-yas-riva-residences")

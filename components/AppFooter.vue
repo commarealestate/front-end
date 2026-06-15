@@ -100,8 +100,8 @@
                   <Icon name="heroicons:phone" class="w-4 h-4 text-comma-primary" />
                 </div>
                 <div>
-                  <a href="tel:+971508008879" dir="ltr" class="text-white text-sm hover:text-comma-secondary transition-colors duration-300">
-                    +971 50 800 8879
+                  <a :href="telLink" dir="ltr" class="text-white text-sm hover:text-comma-secondary transition-colors duration-300">
+                    {{ phoneDisplay }}
                   </a>
                 </div>
               </div>
@@ -112,8 +112,8 @@
                   <Icon name="heroicons:envelope" class="w-4 h-4 text-comma-primary" />
                 </div>
                 <div>
-                  <a href="mailto:info@commarealestate.ae" class="text-white text-sm hover:text-comma-secondary transition-colors duration-300">
-                    info@commarealestate.ae
+                  <a :href="mailtoLink" class="text-white text-sm hover:text-comma-secondary transition-colors duration-300">
+                    {{ email }}
                   </a>
                 </div>
               </div>
@@ -165,6 +165,7 @@ const { locale } = useI18n();
 const localePath = useLocalePath();
 
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr');
+const { email, phoneDisplay, telLink, mailtoLink } = useSiteContact('info')
 
 // Navigation items from AppNavbar (reused)
 const navLinks = [

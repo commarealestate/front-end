@@ -44,7 +44,7 @@
                 </div>
                 <div>
                   <h3 class="font-semibold text-comma-neutral-900 mb-1">{{ $t('contact_page.phone') }}</h3>
-                  <a :href="`tel:${phone}`" class="text-comma-primary hover:underline">{{ phone }}</a>
+                  <a :href="telLink" class="text-comma-primary hover:underline" dir="ltr">{{ phoneDisplay }}</a>
                 </div>
               </div>
 
@@ -55,7 +55,7 @@
                 </div>
                 <div>
                   <h3 class="font-semibold text-comma-neutral-900 mb-1">{{ $t('contact_page.email') }}</h3>
-                  <a :href="`mailto:${email}`" class="text-comma-primary hover:underline">{{ email }}</a>
+                  <a :href="mailtoLink" class="text-comma-primary hover:underline">{{ email }}</a>
                 </div>
               </div>
 
@@ -181,10 +181,7 @@ import { useNotificationStore } from '~/store/notification'
 const { locale, t } = useI18n()
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr')
 const notification = useNotificationStore()
-
-// Contact details
-const phone = '+971508008879'
-const email = 'Info@commarealestate.ae'
+const { email, phoneDisplay, telLink, mailtoLink } = useSiteContact('info')
 const website = 'www.commarealestate.ae'
 const linkedin = 'linkedin.com/company/comma-real-estate'
 

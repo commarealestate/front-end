@@ -46,7 +46,7 @@
             <!-- Basic Info -->
             <div class="flex-1 text-white">
               <h1 class="text-3xl lg:text-4xl font-bold mb-2 font-display">{{ fullName }}</h1>
-              <p v-if="jobTitle" class="text-xl text-white/90 mb-4">{{ jobTitle }}</p>
+              <p v-if="agentJobTitle" class="text-xl text-white/90 mb-4">{{ agentJobTitle }}</p>
 
               <!-- Stats -->
               <div class="flex flex-wrap gap-6 mb-6">
@@ -68,21 +68,20 @@
 
               <!-- Quick Contact -->
               <div class="flex flex-wrap gap-3">
-                <a v-if="agent.personal_mobile" :href="`tel:${agent.personal_mobile}`"
+                <a v-if="telLink" :href="telLink"
                   class="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all duration-300">
                   <Icon name="mdi:phone" class="w-4 h-4" />
-                  <span>{{ agent.personal_mobile }}</span>
+                  <span dir="ltr">{{ phoneDisplay }}</span>
                 </a>
-                <a :href="`mailto:${agent.e_mail}`"
+                <a v-if="mailtoLink" :href="mailtoLink"
                   class="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all duration-300">
                   <Icon name="mdi:email" class="w-4 h-4" />
-                  <span>{{ agent.e_mail }}</span>
+                  <span>{{ email }}</span>
                 </a>
-                <a v-if="agent.personal_mobile" :href="`https://wa.me/${agent.personal_mobile.replace(/\D/g, '')}`"
-                  target="_blank"
+                <a v-if="whatsappLink" :href="whatsappLink" target="_blank" rel="noopener noreferrer"
                   class="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all duration-300">
                   <Icon name="mdi:whatsapp" class="w-4 h-4" />
-                  <span>{{ agent.personal_mobile }}</span>
+                  <span dir="ltr">{{ whatsappDisplay }}</span>
                 </a>
               </div>
             </div>
@@ -103,7 +102,7 @@
                 <div class="space-y-4 mb-6">
                   <h3 class="text-lg font-bold text-comma-neutral-900 mb-4">{{ $t('agent_detail.contact_info') }}</h3>
 
-                  <a v-if="agent.personal_mobile" :href="`tel:${agent.personal_mobile}`"
+                  <a v-if="telLink" :href="telLink"
                     class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 group">
                     <div
                       class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary transition-colors duration-300">
@@ -111,11 +110,11 @@
                     </div>
                     <div>
                       <div class="text-sm text-comma-neutral-600">{{ $t('agent_detail.call') }}</div>
-                      <div class="font-semibold text-comma-neutral-900">{{ agent.personal_mobile }}</div>
+                      <div class="font-semibold text-comma-neutral-900" dir="ltr">{{ phoneDisplay }}</div>
                     </div>
                   </a>
 
-                  <a :href="`mailto:${agent.e_mail}`"
+                  <a v-if="mailtoLink" :href="mailtoLink"
                     class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 group">
                     <div
                       class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary transition-colors duration-300">
@@ -123,12 +122,11 @@
                     </div>
                     <div>
                       <div class="text-sm text-comma-neutral-600">{{ $t('agent_detail.email') }}</div>
-                      <div class="font-semibold text-comma-neutral-900">{{ agent.e_mail }}</div>
+                      <div class="font-semibold text-comma-neutral-900 break-all">{{ email }}</div>
                     </div>
                   </a>
 
-                  <a v-if="agent.personal_mobile" :href="`https://wa.me/${agent.personal_mobile.replace(/\D/g, '')}`"
-                    target="_blank"
+                  <a v-if="whatsappLink" :href="whatsappLink" target="_blank" rel="noopener noreferrer"
                     class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-green-500 hover:bg-green-50 transition-colors duration-300 group">
                     <div
                       class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-500 transition-colors duration-300">
@@ -136,21 +134,7 @@
                     </div>
                     <div>
                       <div class="text-sm text-comma-neutral-600">WhatsApp</div>
-                      <div class="font-semibold text-comma-neutral-900">{{ agent.personal_mobile }}</div>
-                    </div>
-                  </a>
-
-                  <!-- Company Email (if different) -->
-                  <a v-if="agent.company_e_mail && agent.company_e_mail !== agent.e_mail"
-                    :href="`mailto:${agent.company_e_mail}`"
-                    class="flex items-center gap-3 p-3 rounded-lg border border-comma-border-subtle hover:border-comma-primary hover:bg-comma-primary/5 transition-colors duration-300 group">
-                    <div
-                      class="w-10 h-10 rounded-full bg-comma-primary/10 flex items-center justify-center group-hover:bg-comma-primary transition-colors duration-300">
-                      <Icon name="mdi:office-building" class="w-5 h-5 text-comma-primary group-hover:text-white" />
-                    </div>
-                    <div>
-                      <div class="text-sm text-comma-neutral-600">{{ $t('agent_detail.company_email') }}</div>
-                      <div class="font-semibold text-comma-neutral-900">{{ agent.company_e_mail }}</div>
+                      <div class="font-semibold text-comma-neutral-900" dir="ltr">{{ whatsappDisplay }}</div>
                     </div>
                   </a>
                 </div>
@@ -361,6 +345,16 @@ const agentId = Number(fullParam.split('-')[0])
 const agent = ref<any>(null)
 const loading = ref(true)
 
+const {
+  email,
+  phoneDisplay,
+  whatsappDisplay,
+  agentJobTitle,
+  telLink,
+  mailtoLink,
+  whatsappLink,
+} = useAgentContact(agent)
+
 function agentKey(value: any): number {
   return Number(value?.agent_id ?? value?.id)
 }
@@ -401,9 +395,7 @@ const experience = computed(() => {
   return Math.max(0, now.getFullYear() - start.getFullYear())
 })
 
-const jobTitle = computed(() => {
-  return agent.value?.work_position || agent.value?.position || agent.value?.personal_profession || agent.value?.agent_type || ''
-})
+const jobTitle = agentJobTitle
 
 const propertiesCount = computed(() => propertiesStore.properties.length)
 
