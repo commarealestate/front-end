@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type { Talent, PaginatedResponse } from '~/types/talent'
 import { useNotificationStore } from './notification'
+import { apiErrorFromFetchError, apiErrorFromResponse } from '~/utils/apiError'
 
 interface TalentsState {
   talents: Talent[]
@@ -26,11 +27,11 @@ export const useTalentsStore = defineStore('talents', {
 
   actions: {
     handleApiResponse(response: any) {
-      if (response.status === 1) {
+      if (response?.status === 1) {
         return response.data
-      } else {
-        throw new Error(response.message || 'Request failed')
       }
+
+      throw apiErrorFromResponse(response)
     },
 
     // Fetch all talents (common endpoint)
@@ -45,7 +46,7 @@ export const useTalentsStore = defineStore('talents', {
         }, {
           query: params,
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = data.value as PaginatedResponse<Talent>
         this.talents = result.data
         this.pagination = {
@@ -74,7 +75,7 @@ export const useTalentsStore = defineStore('talents', {
           url: `talents/${id}`,
           method: 'GET',
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = this.handleApiResponse(data.value)
         this.talent = result
         return this.talent
@@ -99,7 +100,7 @@ export const useTalentsStore = defineStore('talents', {
         }, {
           body: formData,
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = this.handleApiResponse(data.value)
         useNotificationStore().success('Success', 'Talent created successfully')
         return result
@@ -125,7 +126,7 @@ export const useTalentsStore = defineStore('talents', {
         }, {
           body: formData,
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = this.handleApiResponse(data.value)
         useNotificationStore().success('Success', 'Talent updated successfully')
         return result
@@ -146,7 +147,7 @@ export const useTalentsStore = defineStore('talents', {
           url: `talents/${id}`,
           method: 'DELETE',
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = this.handleApiResponse(data.value)
         this.talents = this.talents.filter(t => t.talent_id !== Number(id))
         useNotificationStore().success('Deleted', 'Talent deleted successfully')

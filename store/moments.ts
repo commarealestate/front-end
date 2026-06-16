@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type { Moment, PaginatedResponse } from '~/types/moment'
 import { useNotificationStore } from './notification'
+import { apiErrorFromFetchError, apiErrorFromResponse } from '~/utils/apiError'
 
 interface MomentsState {
   moments: Moment[]
@@ -26,11 +27,11 @@ export const useMomentsStore = defineStore('moments', {
 
   actions: {
     handleApiResponse(response: any) {
-      if (response.status === 1) {
+      if (response?.status === 1) {
         return response.data
-      } else {
-        throw new Error(response.message || 'Request failed')
       }
+
+      throw apiErrorFromResponse(response)
     },
 
     // Fetch all moments (common endpoint)
@@ -45,7 +46,7 @@ export const useMomentsStore = defineStore('moments', {
         }, {
           query: params,
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = data.value as PaginatedResponse<Moment>
         this.moments = result.data
         this.pagination = {
@@ -74,7 +75,7 @@ export const useMomentsStore = defineStore('moments', {
           url: `emiratisation/moments/${id}`,
           method: 'GET',
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = this.handleApiResponse(data.value)
         this.moment = result
         return this.moment
@@ -99,7 +100,7 @@ export const useMomentsStore = defineStore('moments', {
         }, {
           body: formData,
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = this.handleApiResponse(data.value)
         useNotificationStore().success('Success', 'Moment created successfully')
         return result
@@ -125,7 +126,7 @@ export const useMomentsStore = defineStore('moments', {
         }, {
           body: formData,
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = this.handleApiResponse(data.value)
         useNotificationStore().success('Success', 'Moment updated successfully')
         return result
@@ -146,7 +147,7 @@ export const useMomentsStore = defineStore('moments', {
           url: `emiratisation/moments/${id}`,
           method: 'DELETE',
         })
-        if (error.value) throw error.value
+        if (error.value) throw apiErrorFromFetchError(error.value, data.value)
         const result = this.handleApiResponse(data.value)
         this.moments = this.moments.filter(m => m.emiratisation_moments_id !== Number(id))
         useNotificationStore().success('Deleted', 'Moment deleted successfully')

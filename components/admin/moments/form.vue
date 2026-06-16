@@ -18,7 +18,7 @@
               @change="handleMediaUpload"
             />
             <div class="mt-2 text-xs text-comma-neutral-500">
-              Supported: jpg, jpeg, png, webp, mp4, mov, avi, webm
+              Supported: jpg, jpeg, png, webp, mp4, mov, avi, webm — max 50 MB
             </div>
           </UFormGroup>
           <!-- Preview -->
@@ -49,25 +49,25 @@
       </UCard>
 
       <!-- Title & Description -->
-      <!-- <UCard>
+      <UCard>
         <template #header>
           <h2 class="font-display font-semibold">{{ $t('admin_moments_page.form.details') }}</h2>
         </template>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <UFormGroup label="Title (EN)" name="title_en">
-            <UInput v-model="form.title_en" placeholder="(optional, will default to '-')" />
+            <UInput v-model="form.title_en" placeholder="(optional, defaults to '-')" />
           </UFormGroup>
           <UFormGroup label="Title (AR)" name="title_ar">
-            <UInput v-model="form.title_ar" placeholder="(optional, will default to '-')" />
+            <UInput v-model="form.title_ar" placeholder="(optional, defaults to '-')" />
           </UFormGroup>
           <UFormGroup label="Description (EN)" name="description_en" class="md:col-span-2">
-            <UTextarea v-model="form.description_en" rows="3" placeholder="(optional, will default to '-')" />
+            <UTextarea v-model="form.description_en" rows="3" placeholder="(optional, defaults to '-')" />
           </UFormGroup>
           <UFormGroup label="Description (AR)" name="description_ar" class="md:col-span-2">
-            <UTextarea v-model="form.description_ar" rows="3" placeholder="(optional, will default to '-')" />
+            <UTextarea v-model="form.description_ar" rows="3" placeholder="(optional, defaults to '-')" />
           </UFormGroup>
         </div>
-      </UCard> -->
+      </UCard>
 
       <div class="flex justify-end gap-3">
         <UButton color="gray" variant="ghost" :to="localePath('/admin/emiratisation-moments')">
@@ -84,6 +84,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useMomentsStore } from '~/store/moments'
+import { useNotificationStore } from '~/store/notification'
+import {
+  MAX_MOMENT_MEDIA_BYTES,
+  validateFileMaxSize,
+} from '~/utils/adminFormHelpers'
 
 const props = defineProps<{
   mode: 'create' | 'edit'
@@ -133,8 +138,16 @@ onMounted(async () => {
 function handleMediaUpload(event: Event) {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
-    mediaFile.value = target.files[0]
-    mediaPreview.value = URL.createObjectURL(target.files[0])
+    const file = target.files[0]
+    const sizeError = validateFileMaxSize(file, MAX_MOMENT_MEDIA_BYTES, 'Media file')
+    if (sizeError) {
+      useNotificationStore().error('Error', sizeError)
+      target.value = ''
+      return
+    }
+
+    mediaFile.value = file
+    mediaPreview.value = URL.createObjectURL(file)
     existingMedia.value = null
   }
 }

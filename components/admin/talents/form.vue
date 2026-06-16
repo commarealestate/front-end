@@ -17,6 +17,9 @@
               accept="image/*"
               @change="handleImageUpload"
             />
+            <div class="mt-2 text-xs text-comma-neutral-500">
+              Max size: 2 MB (jpg, jpeg, png, webp)
+            </div>
           </UFormGroup>
           <!-- Preview -->
           <div v-if="imagePreview || existingImage" class="mt-4">
@@ -57,7 +60,7 @@
             <UInput v-model="form.email" type="email" />
           </UFormGroup>
           <UFormGroup label="LinkedIn URL (profile url)" name="url">
-            <UInput v-model="form.url" placeholder="https://..." />
+            <UInput v-model="form.url" placeholder="linkedin.com/in/username or https://..." />
           </UFormGroup>
         </div>
       </UCard>
@@ -93,6 +96,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useTalentsStore } from '~/store/talents'
 import { useNotificationStore } from '~/store/notification'
+import {
+  MAX_TALENT_IMAGE_BYTES,
+  normalizeExternalUrl,
+  validateFileMaxSize,
+} from '~/utils/adminFormHelpers'
 
 const props = defineProps<{
   mode: 'create' | 'edit'
@@ -142,8 +150,16 @@ onMounted(async () => {
 function handleImageUpload(event: Event) {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
-    imageFile.value = target.files[0]
-    imagePreview.value = URL.createObjectURL(target.files[0])
+    const file = target.files[0]
+    const sizeError = validateFileMaxSize(file, MAX_TALENT_IMAGE_BYTES, 'Image')
+    if (sizeError) {
+      useNotificationStore().error('Error', sizeError)
+      target.value = ''
+      return
+    }
+
+    imageFile.value = file
+    imagePreview.value = URL.createObjectURL(file)
     existingImage.value = null
   }
 }
@@ -163,7 +179,7 @@ async function handleSubmit() {
     formData.append('title_en', form.title_en)
     formData.append('title_ar', form.title_ar)
     if (form.email) formData.append('email', form.email)
-    if (form.url) formData.append('url', form.url)
+    if (form.url) formData.append('url', normalizeExternalUrl(form.url))
     if (form.desc_en) formData.append('desc_en', form.desc_en)
     if (form.desc_ar) formData.append('desc_ar', form.desc_ar)
 
