@@ -1,0 +1,45 @@
+---
+description: Deliver copy-paste progress updates for the owner's Google Drive report
+alwaysApply: true
+---
+
+# Google Drive Progress Report Updates
+
+The owner maintains the CRM & Website progress report on Google Drive. The agent has no access to it.
+
+## When to provide updates
+
+After completing work sessions, or when the user asks (e.g. "اعطني التحديث للـ Drive", "give me the Drive update"), provide **plain English text** ready to copy and paste — not a .doc/.docx file.
+
+## Format
+
+Use this structure each time:
+
+```
+Update — [Month Day, Year]
+
+Completed in this session:
+- ...
+- ...
+
+Still remaining:
+- ...
+
+Verification:
+- ...
+```
+
+## Rules
+
+- Default language: **English** (unless the user asks for Arabic).
+- Append-style: each update is a new dated section for the bottom of the Drive document.
+- When an item moves from "Remaining" to "Done", state that explicitly.
+- Base updates on actual git changes, code work, and requirements-audit.md when relevant.
+- Do not generate Word files for owner follow-up unless explicitly requested.
+
+## Project context
+
+- Frontend: `D:\comma` — repo: github.com/commarealestate/front-end
+- Backend: `D:\laragon\www\comma` — repo: github.com/commarealestate/backend
+- Source requirements: CRM & Website Issues + New Feature Request (PDF)
+- Tracker: requirements-audit.md
