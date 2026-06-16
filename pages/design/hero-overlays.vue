@@ -162,6 +162,7 @@ import type { HeroOverlayVariant } from '~/composables/useHeroTextStyle'
 
 definePageMeta({
   layout: false,
+  middleware: 'design-dev-only',
 })
 
 const { locale, t } = useI18n()
