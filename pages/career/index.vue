@@ -2,17 +2,25 @@
   <div class="min-h-screen bg-comma-neutral-50" :dir="direction">
     <!-- Hero Section -->
     <section
-      class="relative min-h-[90vh] lg:min-h-screen flex items-center justify-center overflow-hidden bg-[url('/images/careers-hero.jpeg')] bg-cover bg-center lg:bg-fixed">
+      class="relative min-h-[90vh] lg:min-h-screen flex items-center justify-center overflow-hidden">
 
-      <div class="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/50"></div>
+      <div class="absolute inset-0">
+        <img
+          src="/images/careers-hero.jpeg"
+          alt=""
+          class="h-full w-full object-cover object-center"
+          :class="mediaBoostClass"
+        />
+        <HeroOverlay variant="bright" align="center" :direction="direction" />
+      </div>
       <div class="absolute inset-0 bg-grid-white/[0.02] bg-grid-pattern"></div>
 
       <div class="container relative z-10 px-4 lg:px-8 mx-auto text-center">
-        <div class="max-w-4xl mx-auto">
-          <h1 class="text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 leading-tight font-display">
+        <div class="max-w-4xl mx-auto" :class="contentPanelClass">
+          <h1 class="text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 leading-tight font-display" :class="headingClass">
             {{ $t('career_page.title') }}
           </h1>
-          <p class="text-lg lg:text-xl text-white/90 mb-8 leading-relaxed">
+          <p class="text-lg lg:text-xl mb-8 leading-relaxed" :class="bodyClass">
             {{ $t('career_page.subtitle') }}
           </p>
 
@@ -269,6 +277,7 @@ const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const router = useRouter()
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr')
+const { headingClass, bodyClass, contentPanelClass, mediaBoostClass } = useSiteHero()
 const { email: careersEmail, mailtoLink: careersMailto } = useSiteContact('careers')
 
 // SEO Head (unchanged)

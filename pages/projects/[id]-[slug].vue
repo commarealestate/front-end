@@ -2,22 +2,30 @@
     <div v-if="project" class="min-h-screen bg-comma-neutral-50" :dir="direction">
         <!-- Lead-first hero -->
         <section
-            class="relative min-h-screen flex items-center overflow-hidden bg-cover bg-center bg-fixed py-28 lg:py-32"
-            :style="{ backgroundImage: `url(${heroImage})` }">
-            <div class="absolute inset-0 bg-black/50"></div>
+            class="relative min-h-screen flex items-center overflow-hidden py-28 lg:py-32">
+            <div class="absolute inset-0">
+                <img
+                    :src="heroImage"
+                    :alt="projectTitle"
+                    class="h-full w-full object-cover object-center"
+                    :class="mediaBoostClass"
+                />
+                <HeroOverlay variant="bright" align="start" :direction="direction" />
+            </div>
             <div class="container relative z-10 mx-auto px-4">
                 <div class="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
-                    <div class="max-w-4xl animate-fade-in-up text-white">
+                    <div class="max-w-4xl animate-fade-in-up" :class="contentPanelClass">
                         <div v-if="projectBadge" class="mb-4 inline-block">
                             <span class="rounded-full bg-comma-primary px-3 py-1 text-sm font-semibold text-white">
                                 {{ projectBadge }}
                             </span>
                         </div>
-                        <h1 class="mb-4 font-display text-4xl font-bold md:text-5xl lg:text-6xl">
+                        <h1 class="mb-4 font-display text-4xl font-bold md:text-5xl lg:text-6xl" :class="headingClass">
                             {{ projectTitle }}
                         </h1>
                         <div
-                            class="prose prose-invert max-w-2xl text-lg leading-relaxed text-white/90 md:text-xl"
+                            class="prose prose-invert max-w-2xl text-lg leading-relaxed md:text-xl"
+                            :class="bodyClass"
                             v-html="projectDescription"
                         />
                     </div>
@@ -200,6 +208,7 @@ import 'swiper/css/pagination'
 const route = useRoute()
 const { locale } = useI18n()
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr')
+const { headingClass, bodyClass, contentPanelClass, mediaBoostClass } = useSiteHero()
 const { email: salesEmail, mailtoLink: salesMailto } = useSiteContact('sales')
 const store = useProjectsStore()
 

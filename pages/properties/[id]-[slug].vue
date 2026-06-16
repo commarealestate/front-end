@@ -5,12 +5,13 @@
       <div class="absolute inset-0">
         <img :src="heroImage" :alt="propertyTitle" loading="lazy"
           class="w-full h-full object-cover transform scale-105 transition-transform duration-1000 group-hover:scale-100"
+          :class="mediaBoostClass"
           @error="handleImageError" />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20"></div>
+        <HeroOverlay variant="bright" align="start" :direction="direction" />
       </div>
       <div class="absolute inset-0 flex items-end pb-12 lg:pb-20">
         <div class="container mx-auto px-4 lg:px-8">
-          <div class="max-w-4xl animate-slide-up">
+          <div class="max-w-4xl animate-slide-up" :class="contentPanelClass">
             <!-- Badges -->
             <div class="flex flex-wrap gap-2 mb-4">
               <span class="px-3 py-1 bg-comma-primary text-white text-sm font-semibold rounded-full shadow-lg">
@@ -21,10 +22,10 @@
                 {{ property.offeringType }}
               </span>
             </div>
-            <h1 class="text-3xl lg:text-5xl xl:text-6xl font-bold text-white font-display leading-tight">
+            <h1 class="text-3xl lg:text-5xl xl:text-6xl font-bold font-display leading-tight" :class="headingClass">
               {{ propertyTitle }}
             </h1>
-            <div class="flex flex-wrap items-center gap-4 mt-4 text-white/90">
+            <div class="flex flex-wrap items-center gap-4 mt-4" :class="bodyClass">
               <div class="flex items-center gap-1">
                 <Icon name="mdi:map-marker" class="w-5 h-5" />
                 <span>{{ property.location }}<span v-if="property.city">, {{ property.city }}</span></span>
@@ -481,6 +482,7 @@ import { digitsOnly } from '~/utils/propertyContact'
 const route = useRoute()
 const { locale, t } = useI18n()
 const direction = computed(() => locale.value === 'ar' ? 'rtl' : 'ltr')
+const { headingClass, bodyClass, contentPanelClass, mediaBoostClass } = useSiteHero()
 const localePath = useLocalePath()
 const store = usePropertiesStore()
 
