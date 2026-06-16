@@ -1429,7 +1429,7 @@
     "create": "Create",
     "update": "Update",
     "filters": {
-      "name": "Search by name",
+      "name": "Search by name or email",
       "status": "Status",
       "service_area": "Service Area",
       "reset": "Reset",

@@ -35,13 +35,18 @@
 
 <script setup lang="ts">
 const { t } = useI18n()
+const route = useRoute()
 const emit = defineEmits(['filter', 'reset'])
 
-const filters = ref({
-  name: '',
-  active: '',
-  service_area_name: '',
-})
+function filtersFromQuery(query: Record<string, any> = route.query) {
+  return {
+    name: String(query.name ?? ''),
+    active: String(query.active ?? ''),
+    service_area_name: String(query.service_area_name ?? ''),
+  }
+}
+
+const filters = ref(filtersFromQuery())
 
 const activeOptions = [
   { label: 'All', value: '' },
